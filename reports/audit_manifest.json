@@ -1,0 +1,31 @@
+{
+  "audit_version": "2.0",
+  "audit_timestamp": "2026-09-27T19:39:26.273153+00:00",
+  "dataset_root": "C:\\Users\\anali\\OneDrive\\Desktop\\Senior\\Factored_hackton\\data",
+  "files_scanned": 7671,
+  "logical_datasets": 13,
+  "row_counts": {
+    "branches": 350,
+    "call_center_interactions": 686296,
+    "call_transcripts": 171321,
+    "campaign_sends": 1746801,
+    "complaints": 67095,
+    "customers": 150000,
+    "daily_exchange_rates": 13164,
+    "digital_events": 15620994,
+    "marketing_campaigns": 200,
+    "products": 400000,
+    "satisfaction_surveys": 212759,
+    "service_agents": 1200,
+    "transactions": 4425008
+  },
+  "input_fingerprint": "47271ffeb70d796526d1318cb4b102f7bd382dc516abf6a34ff009e1fa858ea4",
+  "portuguese_transcript_count": 0,
+  "transaction_related_interactions": 240056,
+  "complaint_related_interactions": 117021,
+  "warnings": [
+    "Full-text content is not emitted.",
+    "Workflow relevance uses deterministic reason-category token matching and requires validation."
+  ],
+  "errors": []
+}

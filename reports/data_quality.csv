@@ -1,0 +1,261 @@
+column,dataset,distinct_count,invalid_timestamp_count,null_count,null_pct,representative_values,rows,severity
+branch_id,branches,350,0,0,0.0,"[""SUC-98QOW3F1"", ""SUC-3DCC91G4"", ""SUC-COPO2MJ8""]",350,LOW
+branch_code,branches,350,0,0,0.0,"[""S0001"", ""S0002"", ""S0003""]",350,LOW
+branch_name,branches,175,0,0,0.0,[],350,LOW
+branch_type,branches,4,0,0,0.0,"[""Express"", ""Premium"", ""Express""]",350,LOW
+address,branches,350,0,0,0.0,[],350,LOW
+city,branches,16,0,0,0.0,"[""Tijuana"", ""Guadalajara"", ""Puebla""]",350,LOW
+state,branches,16,0,0,0.0,"[""Baja California"", ""Jalisco"", ""Puebla""]",350,LOW
+country,branches,3,0,0,0.0,"[""México"", ""México"", ""México""]",350,LOW
+postal_code,branches,105,0,0,0.0,"[""22000"", ""44100"", ""72000""]",350,LOW
+geographic_zone,branches,1,0,0,0.0,"[""Urbana"", ""Urbana"", ""Urbana""]",350,LOW
+phone,branches,350,0,0,0.0,[],350,LOW
+email,branches,350,0,0,0.0,[],350,LOW
+opening_time,branches,4,350,0,0.0,"[""09:30:00"", ""08:00:00"", ""08:00:00""]",350,LOW
+closing_time,branches,5,350,0,0.0,"[""17:30:00"", ""17:00:00"", ""17:30:00""]",350,LOW
+has_atms,branches,1,0,0,0.0,"[""True"", ""True"", ""True""]",350,LOW
+atm_count,branches,7,0,0,0.0,"[""5"", ""7"", ""8""]",350,LOW
+has_teller_windows,branches,1,0,0,0.0,"[""True"", ""True"", ""True""]",350,LOW
+teller_window_count,branches,10,0,0,0.0,"[""12"", ""6"", ""3""]",350,LOW
+latitude,branches,350,0,0,0.0,"[""-0.0443619"", ""20.7143137"", ""0.0610092""]",350,LOW
+longitude,branches,350,0,0,0.0,"[""0.0738601"", ""-103.2525557"", ""-0.019767""]",350,LOW
+branch_opening_date,branches,346,0,0,0.0,"[""1997-02-28"", ""2000-06-11"", ""1992-12-20""]",350,LOW
+branch_status,branches,2,0,0,0.0,"[""Active"", ""Active"", ""Active""]",350,LOW
+interaction_id,call_center_interactions,686296,0,0,0.0,"[""INT-8LKPPFGAVR5FA7R3"", ""INT-R2TSE2WKP7HVN55Q"", ""INT-88K2QTZJ4NY5ILYX""]",686296,LOW
+interaction_date,call_center_interactions,683625,0,0,0.0,"[""2023-06-17 18:00:48"", ""2023-06-18 06:10:40"", ""2023-06-18 03:38:17""]",686296,LOW
+process_date,call_center_interactions,1097,0,0,0.0,"[""2023-06-17"", ""2023-06-17"", ""2023-06-17""]",686296,LOW
+customer_id,call_center_interactions,148443,0,0,0.0,"[""CLI-EBVG034XZPFT"", ""CLI-C46C63F54F0A"", ""CLI-ZOGX29P6Q6JB""]",686296,LOW
+agent_id,call_center_interactions,1090,0,0,0.0,"[""AGT-HHYX8OE9JF"", ""AGT-7CQYEF4L7J"", ""AGT-3SCBQBHAUJ""]",686296,LOW
+interaction_type,call_center_interactions,5,0,0,0.0,"[""Inbound Call"", ""Inbound Call"", ""Email""]",686296,LOW
+channel,call_center_interactions,6,0,0,0.0,"[""Phone"", ""Phone"", ""Email""]",686296,LOW
+contact_reason,call_center_interactions,6,0,0,0.0,"[""Transaccional"", ""Comercial"", ""Retención""]",686296,LOW
+reason_category,call_center_interactions,6,0,0,0.0,"[""Transaccional"", ""Comercial"", ""Retención""]",686296,LOW
+duration_seconds,call_center_interactions,1049,0,96234,14.0222,"[""250.0"", ""545.0"", ""605.0""]",686296,HIGH
+wait_time_seconds,call_center_interactions,370,480678,205618,29.9605,"[""179.0"", ""186.0"", ""149.0""]",686296,HIGH
+was_resolved,call_center_interactions,2,0,0,0.0,"[""True"", ""True"", ""True""]",686296,LOW
+requires_followup,call_center_interactions,2,0,0,0.0,"[""False"", ""False"", ""False""]",686296,LOW
+detected_sentiment,call_center_interactions,5,686296,0,0.0,"[""Neutral"", ""Neutral"", ""Neutral""]",686296,LOW
+sentiment_score,call_center_interactions,202,686296,0,0.0,"[""-0.28"", ""-0.17"", ""0.29""]",686296,LOW
+customer_detected_accent,call_center_interactions,3,0,204750,29.8341,"[""argentine"", ""mexican"", ""mexican""]",686296,HIGH
+agent_used_accent,call_center_interactions,3,0,204750,29.8341,"[""argentine"", ""mexican"", ""colombian""]",686296,HIGH
+was_escalated,call_center_interactions,2,0,0,0.0,"[""False"", ""False"", ""False""]",686296,LOW
+mentioned_products,call_center_interactions,274341,0,411955,60.0258,"[""PRD-LWE7ZI313MSF,PRD-2DZJYU0POJ9N,PRD-4FGYV9I6WVAN"", ""PRD-0BOYEP2OM3RU,PRD-L4ZSCFDICUT3,PRD-YMTPFQY9TJHF"", ""PRD-EHNER1394RVT,PRD-0VG1IMHF194A""]",686296,HIGH
+has_transcript,call_center_interactions,2,0,0,0.0,"[""False"", ""True"", ""False""]",686296,LOW
+has_recording,call_center_interactions,2,0,0,0.0,"[""True"", ""True"", ""False""]",686296,LOW
+transcript_id,call_transcripts,171321,0,0,0.0,"[""TRS-PPFGAVR5FA7R3DCC91G4"", ""TRS-DD79XNL6Q5DZNKOUR81B"", ""TRS-E7ZI313MSF2DZJYU0POJ""]",171321,LOW
+interaction_id,call_transcripts,171321,0,0,0.0,"[""INT-R2TSE2WKP7HVN55Q"", ""INT-ERY0VKHXAEWUJQSW"", ""INT-HC9ALVKI68EJ8HPG""]",171321,LOW
+process_date,call_transcripts,1097,0,0,0.0,"[""2023-06-17"", ""2023-06-17"", ""2023-06-17""]",171321,LOW
+customer_id,call_transcripts,101951,0,0,0.0,"[""CLI-C46C63F54F0A"", ""CLI-RTCOQFG4LA8Q"", ""CLI-N344OED0JO0L""]",171321,LOW
+agent_id,call_transcripts,1090,0,0,0.0,"[""AGT-7CQYEF4L7J"", ""AGT-67FCNFADT1"", ""AGT-LTX82QBP86""]",171321,LOW
+full_text,call_transcripts,546,0,0,0.0,[],171321,LOW
+customer_text,call_transcripts,42,0,0,0.0,[],171321,LOW
+agent_text,call_transcripts,42,0,0,0.0,[],171321,LOW
+detected_language,call_transcripts,1,0,0,0.0,"[""es"", ""es"", ""es""]",171321,LOW
+detected_accent,call_transcripts,3,0,63083,36.8215,"[""mexican"", ""argentine"", ""mexican""]",171321,HIGH
+accent_confidence,call_transcripts,25,0,17141,10.0052,"[""0.76"", ""0.9"", ""0.93""]",171321,HIGH
+detected_keywords,call_transcripts,12,0,8797,5.1348,"[""banco, cuenta, servicio"", ""cuenta, banco"", ""cuenta, banco""]",171321,MEDIUM
+mentioned_entities,call_transcripts,54,0,17164,10.0186,"[""{\""account_numbers\"": 0, \""dates\"": 0, \""amounts\"": 0, \""products\"": \""Cuenta Ahorro\""}"", ""{\""account_numbers\"": 0, \""dates\"": 0, \""amounts\"": 1, \""products\"": \""Tarjeta Crédito\""}"", ""{\""account_numbers\"": 0, \""dates\"": 1, \""amounts\"": 2, \""products\"": null}""]",171321,HIGH
+detected_intents,call_transcripts,1,0,8457,4.9363,"[""consulta_general"", ""consulta_general"", ""consulta_general""]",171321,MEDIUM
+main_topics,call_transcripts,6,0,0,0.0,"[""Comercial"", ""Queja"", ""Queja""]",171321,LOW
+transcription_model,call_transcripts,4,0,0,0.0,"[""Whisper v3"", ""AWS Transcribe"", ""AWS Transcribe""]",171321,LOW
+audio_quality,call_transcripts,3,0,8638,5.042,"[""High"", ""High"", ""Medium""]",171321,MEDIUM
+duration_seconds,call_transcripts,973,0,24029,14.0257,"[""545.0"", ""470.0"", ""420.0""]",171321,HIGH
+send_id,campaign_sends,1746801,0,0,0.0,"[""SND-YC33ULTQJZDJTMVKP18A"", ""SND-9XO7BR2TSE2WKP7HVN55"", ""SND-U0POJ9N4FGYV9I6WVANL""]",1746801,LOW
+send_date,campaign_sends,1729711,0,0,0.0,"[""2023-07-01 14:01:33"", ""2023-07-01 13:37:40"", ""2023-07-01 09:18:35""]",1746801,LOW
+process_date,campaign_sends,1083,0,0,0.0,"[""2023-07-01"", ""2023-07-01"", ""2023-07-01""]",1746801,LOW
+campaign_id,campaign_sends,175,0,0,0.0,"[""CMP-7SE3FL9JKMZE"", ""CMP-7SE3FL9JKMZE"", ""CMP-7SE3FL9JKMZE""]",1746801,LOW
+customer_id,campaign_sends,150000,0,0,0.0,"[""CLI-0YQ44QPQ77DX"", ""CLI-PFYINQ8JMS43"", ""CLI-X5N59QU30KGC""]",1746801,LOW
+send_channel,campaign_sends,5,0,0,0.0,"[""Email"", ""Email"", ""Email""]",1746801,LOW
+template_used,campaign_sends,875,0,175218,10.0308,"[""template_CMP-7SE3FL9JKMZE_3"", ""template_CMP-7SE3FL9JKMZE_1"", ""template_CMP-7SE3FL9JKMZE_1""]",1746801,HIGH
+subject,campaign_sends,8,0,1188342,68.0296,"[""¡Oferta especial en Tarjeta Crédito!"", ""¡Oferta especial en Tarjeta Crédito!"", ""¡Oferta especial en Tarjeta Crédito!""]",1746801,HIGH
+send_status,campaign_sends,4,0,0,0.0,"[""Sent"", ""Sent"", ""Sent""]",1746801,LOW
+was_delivered,campaign_sends,2,0,0,0.0,"[""True"", ""True"", ""True""]",1746801,LOW
+was_opened,campaign_sends,2,0,484229,27.7209,"[""False"", ""False"", ""True""]",1746801,HIGH
+open_date,campaign_sends,485996,0,1259492,72.1028,"[""2023-07-02 12:12:02"", ""2023-07-08 05:43:10"", ""2023-07-04 04:50:00""]",1746801,HIGH
+was_clicked,campaign_sends,2,0,0,0.0,"[""False"", ""False"", ""False""]",1746801,LOW
+click_date,campaign_sends,97749,0,1649008,94.4016,"[""2023-07-08 05:46:22"", ""2023-07-04 02:48:34"", ""2023-07-08 17:40:03""]",1746801,HIGH
+click_count,campaign_sends,5,0,1649008,94.4016,"[""5.0"", ""4.0"", ""3.0""]",1746801,HIGH
+had_conversion,campaign_sends,2,0,0,0.0,"[""False"", ""False"", ""False""]",1746801,LOW
+conversion_date,campaign_sends,9798,0,1737002,99.439,"[""2023-07-11 07:32:29"", ""2023-07-08 12:11:46"", ""2023-07-08 18:01:10""]",1746801,HIGH
+conversion_value,campaign_sends,9709,0,1737002,99.439,"[""917.72"", ""3348.61"", ""892.83""]",1746801,HIGH
+open_device,campaign_sends,3,0,1308424,74.904,"[""Tablet"", ""Desktop"", ""Tablet""]",1746801,HIGH
+open_country,campaign_sends,3,0,1308278,74.8957,"[""Colombia"", ""Colombia"", ""Colombia""]",1746801,HIGH
+failure_reason,campaign_sends,3,0,1647204,94.2983,"[""SMTP error"", ""Invalid email address"", ""SMTP error""]",1746801,HIGH
+send_cost,campaign_sends,2901,0,262083,15.0036,"[""0.0011"", ""0.0016"", ""0.0085""]",1746801,HIGH
+complaint_id,complaints,67095,0,0,0.0,"[""CMP-J7LT0TPC5YC33ULTQJZD"", ""CMP-P7HVN55QJQFLDZ4HRU55"", ""CMP-JSJ0B0XVTB2VY3H2RR4H""]",67095,LOW
+creation_date,complaints,67074,0,0,0.0,"[""2023-06-17 16:54:58"", ""2023-06-17 15:37:40"", ""2023-06-17 08:07:05""]",67095,LOW
+process_date,complaints,1097,0,0,0.0,"[""2023-06-17"", ""2023-06-17"", ""2023-06-17""]",67095,LOW
+customer_id,complaints,54145,0,0,0.0,"[""CLI-6TXMFGPFFTZG"", ""CLI-PFYINQ8JMS43"", ""CLI-5B1TIWCXY0U0""]",67095,LOW
+case_type,complaints,4,0,0,0.0,"[""Complaint"", ""Claim"", ""Suggestion""]",67095,LOW
+category,complaints,5,0,0,0.0,"[""Transactions"", ""Transactions"", ""Technical""]",67095,LOW
+subcategory,complaints,5,0,6698,9.9829,"[""Cargo no reconocido"", ""Cargo no reconocido"", ""Problema con app""]",67095,MEDIUM
+reception_channel,complaints,6,0,0,0.0,"[""Email"", ""Email"", ""Branch""]",67095,LOW
+affected_product_id,complaints,42184,0,22525,33.5718,"[""PRD-ML7YZHXJWUCA"", ""PRD-6W9PH9FVWZP4"", ""PRD-84KOGPJBV6A5""]",67095,CRITICAL
+related_branch_id,complaints,350,0,47917,71.4166,"[""SUC-H24HUACK"", ""SUC-DG6C9C1K"", ""SUC-JGB6PK8R""]",67095,CRITICAL
+origin_interaction_id,complaints,0,0,67095,100.0,[],67095,CRITICAL
+description,complaints,5,0,0,0.0,[],67095,LOW
+claimed_amount,complaints,21303,0,45344,67.5818,"[""513.79"", ""4948.14"", ""3931.15""]",67095,HIGH
+currency,complaints,4,0,45319,67.5445,"[""COP"", ""COP"", ""USD""]",67095,HIGH
+priority,complaints,4,0,0,0.0,"[""Medium"", ""Medium"", ""Low""]",67095,LOW
+status,complaints,6,0,0,0.0,"[""Open"", ""Resolved"", ""In Process""]",67095,LOW
+assigned_agent_id,complaints,1200,0,23115,34.4512,"[""AGT-B69BF4590M"", ""AGT-OH0WV42QJM"", ""AGT-EBM3J7XZ6E""]",67095,CRITICAL
+assignment_date,complaints,43955,0,23128,34.4705,"[""2023-06-17 23:37:40"", ""2023-06-18 04:07:05"", ""2023-06-18 23:40:53""]",67095,HIGH
+first_response_date,complaints,40847,0,26242,39.1117,"[""2023-06-18 03:37:40"", ""2023-06-18 18:07:05"", ""2023-06-20 22:40:53""]",67095,HIGH
+resolution_date,complaints,15348,0,51746,77.1235,"[""2023-07-13 15:37:40"", ""2023-07-09 21:26:33"", ""2023-06-25 17:26:12""]",67095,HIGH
+closing_date,complaints,2480,0,64614,96.3023,"[""2023-07-05 00:48:35"", ""2023-06-30 15:31:22"", ""2023-06-26 11:38:44""]",67095,HIGH
+sla_breached,complaints,2,0,0,0.0,"[""True"", ""False"", ""True""]",67095,LOW
+resolution_days,complaints,30,0,51732,77.1026,"[""26.0"", ""22.0"", ""16.0""]",67095,HIGH
+resolution,complaints,5,0,51785,77.1816,"[""Se brindó explicación detallada al cliente y se resolvió la situación."", ""Se revisó el caso y se realizó el ajuste correspondiente en la cuenta del client"", ""Se escaló a área correspondiente y se aplicó la solución definitiva.""]",67095,HIGH
+compensation_granted,complaints,4436,0,62454,93.0829,"[""457.44"", ""406.02"", ""483.02""]",67095,HIGH
+resolution_satisfaction,complaints,5,0,64611,96.2978,"[""2.0"", ""5.0"", ""2.0""]",67095,HIGH
+is_repeat_complainer,complaints,2,0,0,0.0,"[""False"", ""False"", ""False""]",67095,LOW
+customer_id,customers,150000,0,0,0.0,"[""CLI-G4X2AMVD62NR"", ""CLI-F2DZJYU0POJ9"", ""CLI-8WU28O74XKHS""]",150000,LOW
+document_number,customers,150000,0,0,0.0,[],150000,LOW
+document_type,customers,4,0,0,0.0,[],150000,LOW
+first_name,customers,7480,0,0,0.0,[],150000,LOW
+last_name,customers,3460,0,0,0.0,[],150000,LOW
+date_of_birth,customers,22956,0,0,0.0,[],150000,LOW
+gender,customers,3,0,0,0.0,"[""M"", ""M"", ""O""]",150000,LOW
+email,customers,91289,0,2984,1.9893,[],150000,MEDIUM
+mobile_phone,customers,145285,0,4707,3.138,[],150000,MEDIUM
+landline_phone,customers,74942,0,75053,50.0353,[],150000,HIGH
+address,customers,134009,0,7370,4.9133,[],150000,MEDIUM
+city,customers,16,0,0,0.0,"[""Cartagena"", ""Guadalajara"", ""Guadalajara""]",150000,LOW
+state,customers,16,0,0,0.0,"[""Bolívar"", ""Jalisco"", ""Jalisco""]",150000,LOW
+country,customers,3,0,0,0.0,"[""Colombia"", ""México"", ""México""]",150000,LOW
+postal_code,customers,8419,0,15044,10.0293,"[""44100"", ""44100"", ""72000""]",150000,HIGH
+detected_accent,customers,3,0,44817,29.878,"[""colombian"", ""mexican"", ""mexican""]",150000,HIGH
+segment,customers,4,0,0,0.0,"[""Plus"", ""Basic"", ""Basic""]",150000,LOW
+credit_score,customers,400,0,22492,14.9947,"[""701.0"", ""576.0"", ""657.0""]",150000,HIGH
+estimated_monthly_income,customers,119734,0,30033,20.022,"[""24678431.94"", ""28495.4"", ""37284.11""]",150000,HIGH
+occupation,customers,20,0,15039,10.026,"[""Administrative"", ""Homemaker"", ""Teacher""]",150000,HIGH
+marital_status,customers,4,0,11955,7.97,"[""Married"", ""Single"", ""Divorced""]",150000,MEDIUM
+education_level,customers,5,0,17952,11.968,"[""University"", ""High School"", ""Elementary""]",150000,HIGH
+registration_date,customers,149947,0,0,0.0,"[""2021-07-30 05:39:39"", ""2022-12-09 13:10:47"", ""2024-04-06 16:26:17""]",150000,LOW
+registration_branch_id,customers,150000,0,0,0.0,"[""SUC-7R3DCC91"", ""SUC-7ZI313MS"", ""SUC-48CL872M""]",150000,LOW
+customer_status,customers,4,0,0,0.0,"[""Active"", ""Active"", ""Active""]",150000,LOW
+last_updated,customers,149961,0,0,0.0,"[""2021-08-15 05:39:39"", ""2023-05-15 13:10:47"", ""2025-01-12 16:26:17""]",150000,LOW
+accepts_marketing,customers,2,0,0,0.0,"[""False"", ""True"", ""True""]",150000,LOW
+date,daily_exchange_rates,1097,0,0,0.0,"[""2023-06-17"", ""2023-06-17"", ""2023-06-17""]",13164,LOW
+source_currency,daily_exchange_rates,4,0,0,0.0,"[""MXN"", ""COP"", ""ARS""]",13164,LOW
+target_currency,daily_exchange_rates,4,0,0,0.0,"[""USD"", ""USD"", ""USD""]",13164,LOW
+exchange_rate,daily_exchange_rates,9520,0,0,0.0,"[""0.059152"", ""0.000247"", ""0.002877""]",13164,LOW
+buy_rate,daily_exchange_rates,9614,0,0,0.0,"[""0.058841"", ""0.000246"", ""0.002837""]",13164,LOW
+sell_rate,daily_exchange_rates,9636,0,0,0.0,"[""0.059462"", ""0.000249"", ""0.002917""]",13164,LOW
+source,daily_exchange_rates,4,0,0,0.0,"[""Reuters"", ""Central Bank"", ""Central Bank""]",13164,LOW
+event_id,digital_events,15620994,0,0,0.0,"[""EVT-ZUVDGU5COPO2MJ8G9XO7"", ""EVT-Z4HRU55OLDLG9JXO4VRR"", ""EVT-4DZT88K2QTZJ4NY5ILYX""]",15620994,LOW
+event_date,digital_events,14217807,0,0,0.0,"[""2023-06-17 08:52:08"", ""2023-06-17 08:52:47"", ""2023-06-17 08:53:25""]",15620994,LOW
+process_date,digital_events,1097,0,0,0.0,"[""2023-06-17"", ""2023-06-17"", ""2023-06-17""]",15620994,LOW
+customer_id,digital_events,149997,0,3745446,23.977,"[""CLI-X4M6ICRGTT9Z"", ""CLI-X4M6ICRGTT9Z"", ""CLI-X4M6ICRGTT9Z""]",15620994,CRITICAL
+session_id,digital_events,1837415,0,0,0.0,"[""SES-8QOW3F17I07NJ7LT0TPC5YC33ULT"", ""SES-8QOW3F17I07NJ7LT0TPC5YC33ULT"", ""SES-8QOW3F17I07NJ7LT0TPC5YC33ULT""]",15620994,LOW
+event_type,digital_events,7,0,0,0.0,"[""Login"", ""PageView"", ""Login""]",15620994,LOW
+event_category,digital_events,4,0,0,0.0,"[""Authentication"", ""Transaction"", ""Authentication""]",15620994,LOW
+channel,digital_events,4,0,0,0.0,"[""Desktop Web"", ""Desktop Web"", ""Desktop Web""]",15620994,LOW
+platform,digital_events,5,0,780527,4.9967,"[""Linux"", ""Linux"", ""Linux""]",15620994,MEDIUM
+browser,digital_events,5,0,9687736,62.0174,"[""Chrome"", ""Chrome"", ""Chrome""]",15620994,HIGH
+app_version,digital_events,500,0,6714416,42.9833,"[""1.8.2"", ""1.8.2"", ""1.8.2""]",15620994,HIGH
+page_url,digital_events,12,0,780394,4.9958,"[""/login"", ""/payments"", ""/login""]",15620994,MEDIUM
+page_title,digital_events,12,0,779824,4.9922,"[""Iniciar Sesión"", ""Pagar Servicios"", ""Iniciar Sesión""]",15620994,MEDIUM
+action,digital_events,10,0,1561432,9.9957,"[""initiate_payment"", ""login"", ""login""]",15620994,MEDIUM
+element_id,digital_events,12,0,2343244,15.0006,"[""login_form"", ""payment_form"", ""login_form""]",15620994,CRITICAL
+product_id,digital_events,389087,0,14180656,90.7795,"[""PRD-CLQ4FWGYUB8D"", ""PRD-TKV7F5F8R203"", ""PRD-W4B41MSPYOZD""]",15620994,CRITICAL
+event_value,digital_events,397337,0,14826484,94.9138,"[""2883.23"", ""3521.79"", ""4835.45""]",15620994,HIGH
+duration_seconds,digital_events,296,0,9946209,63.6721,"[""117.0"", ""132.0"", ""130.0""]",15620994,HIGH
+ip_address,digital_events,1836678,0,780855,4.9988,[],15620994,MEDIUM
+ip_country,digital_events,4,0,0,0.0,"[""Colombia"", ""Colombia"", ""Colombia""]",15620994,LOW
+ip_city,digital_events,16,0,4370476,27.9782,"[""Medellín"", ""Medellín"", ""Medellín""]",15620994,HIGH
+is_mobile,digital_events,2,0,0,0.0,"[""False"", ""False"", ""False""]",15620994,LOW
+referrer,digital_events,4,0,14573469,93.2941,"[""https://www.instagram.com"", ""https://www.google.com"", ""https://www.google.com""]",15620994,HIGH
+utm_source,digital_events,4,0,14781949,94.6287,"[""google"", ""direct"", ""facebook""]",15620994,HIGH
+utm_medium,digital_events,4,0,14781860,94.6282,"[""social"", ""social"", ""cpc""]",15620994,HIGH
+utm_campaign,digital_events,3,0,14782077,94.6296,"[""retention"", ""spring_promo"", ""new_users""]",15620994,HIGH
+campaign_id,marketing_campaigns,200,0,0,0.0,"[""CMP-8LKPPFGAVR5F"", ""CMP-VKP18A283AMD"", ""CMP-E2WKP7HVN55Q""]",200,LOW
+campaign_name,marketing_campaigns,200,0,0,0.0,[],200,LOW
+description,marketing_campaigns,37,0,39,19.5,[],200,HIGH
+campaign_type,marketing_campaigns,6,0,0,0.0,"[""Push"", ""Email"", ""Email""]",200,LOW
+campaign_objective,marketing_campaigns,5,0,0,0.0,"[""Acquisition"", ""Retention"", ""Cross-sell""]",200,LOW
+promoted_product,marketing_campaigns,7,0,22,11.0,"[""Tarjeta Crédito"", ""Cuenta Ahorro"", ""Cuenta Ahorro""]",200,HIGH
+target_segment,marketing_campaigns,4,0,79,39.5,"[""Plus"", ""Student"", ""Premium""]",200,HIGH
+target_country,marketing_campaigns,3,0,111,55.5,"[""Mexico"", ""Argentina"", ""Colombia""]",200,HIGH
+start_date,marketing_campaigns,186,0,0,0.0,"[""2024-01-12"", ""2025-07-31"", ""2024-09-08""]",200,LOW
+end_date,marketing_campaigns,180,0,0,0.0,"[""2024-01-30"", ""2025-10-16"", ""2024-09-22""]",200,LOW
+budget,marketing_campaigns,169,0,31,15.5,"[""20732.43"", ""415555.31"", ""411792.28""]",200,HIGH
+campaign_status,marketing_campaigns,3,0,0,0.0,"[""Completed"", ""Completed"", ""Completed""]",200,LOW
+expected_conversion_rate,marketing_campaigns,176,0,14,7.0,"[""1.86"", ""9.47"", ""12.17""]",200,MEDIUM
+product_id,products,400000,0,0,0.0,"[""PRD-LT0TPC5YC33U"", ""PRD-L6Q5DZNKOUR8"", ""PRD-9JXO4VRRCA50""]",400000,LOW
+customer_id,products,139578,0,0,0.0,"[""CLI-0Y0HOQ83ZSO4"", ""CLI-E33FWYXNBBAQ"", ""CLI-5A1RQN103PRE""]",400000,LOW
+product_type,products,8,0,0,0.0,"[""Cuenta Corriente"", ""Tarjeta Débito"", ""Tarjeta Crédito""]",400000,LOW
+product_number,products,399994,0,0,0.0,"[""4332181960"", ""4959310341316475"", ""4672423884969653""]",400000,LOW
+currency,products,3,0,0,0.0,"[""COP"", ""USD"", ""USD""]",400000,LOW
+current_balance,products,359956,0,0,0.0,"[""13026299.27"", ""961.65"", ""1173.14""]",400000,LOW
+credit_limit,products,124986,0,274683,68.6707,"[""8489.22"", ""171170911.82"", ""13962562.09""]",400000,HIGH
+interest_rate,products,4443,0,40066,10.0165,"[""0.32"", ""0.0"", ""22.32""]",400000,HIGH
+opening_date,products,2922,0,0,0.0,"[""2025-03-18"", ""2022-08-12"", ""2018-12-27""]",400000,LOW
+expiration_date,products,3652,0,266839,66.7097,"[""2025-08-11"", ""2023-12-26"", ""2024-02-22""]",400000,HIGH
+opening_branch_id,products,350,0,0,0.0,"[""SUC-E1VTXGEU"", ""SUC-LQXENAY2"", ""SUC-TVNO2KL5""]",400000,LOW
+product_status,products,4,0,0,0.0,"[""Active"", ""Active"", ""Active""]",400000,LOW
+opening_channel,products,4,0,0,0.0,"[""Web"", ""App"", ""Branch""]",400000,LOW
+has_linked_app,products,2,0,0,0.0,"[""True"", ""True"", ""True""]",400000,LOW
+days_past_due,products,7,0,274650,68.6625,"[""0.0"", ""0.0"", ""0.0""]",400000,HIGH
+last_transaction_date,products,305391,0,94277,23.5693,"[""2025-07-08 17:19:16"", ""2026-03-31 15:32:04"", ""2024-03-27 23:15:23""]",400000,HIGH
+last_updated,products,399686,0,0,0.0,"[""2025-12-25 00:57:58"", ""2023-01-20 12:56:06"", ""2019-11-12 03:59:31""]",400000,LOW
+survey_id,satisfaction_surveys,212759,0,0,0.0,"[""SRV-07NJ7LT0TPC5YC33ULTQ"", ""SRV-Q5DZNKOUR81B97XVBNEW"", ""SRV-JXO4VRRCA50PPYRI3MUI""]",212759,LOW
+survey_date,satisfaction_surveys,212505,0,0,0.0,"[""2023-06-18 13:07:11"", ""2023-06-18 01:25:31"", ""2023-06-17 13:55:11""]",212759,LOW
+process_date,satisfaction_surveys,1097,0,0,0.0,"[""2023-06-17"", ""2023-06-17"", ""2023-06-17""]",212759,LOW
+interaction_id,satisfaction_surveys,212759,0,0,0.0,"[""INT-D1ETMPV8U41ES9T0"", ""INT-69AIU8SDHRFQS9OL"", ""INT-S3TBIRRGQRO7O0Q4""]",212759,LOW
+customer_id,satisfaction_surveys,113640,0,0,0.0,"[""CLI-9S40YA6NZO28"", ""CLI-QK4ROD4VZT9U"", ""CLI-LSWRINEGQ2XU""]",212759,LOW
+agent_id,satisfaction_surveys,1090,0,0,0.0,"[""AGT-HHZLM4XXDJ"", ""AGT-AQSH0YRHNO"", ""AGT-9FZV5Z7FAG""]",212759,LOW
+survey_type,satisfaction_surveys,3,0,0,0.0,"[""CSAT"", ""CSAT"", ""CSAT""]",212759,LOW
+send_channel,satisfaction_surveys,5,0,0,0.0,"[""Email"", ""Email"", ""Email""]",212759,LOW
+main_score,satisfaction_surveys,7,0,0,0.0,"[""3"", ""1"", ""1""]",212759,LOW
+nps_category,satisfaction_surveys,2,0,152365,71.6139,"[""Detractor"", ""Passive"", ""Detractor""]",212759,HIGH
+question_1_text,satisfaction_surveys,3,0,91456,42.9857,[],212759,HIGH
+question_1_response,satisfaction_surveys,5,0,91389,42.9542,"[""3.0"", ""1.0"", ""4.0""]",212759,HIGH
+question_2_text,satisfaction_surveys,1,0,131388,61.7544,[],212759,HIGH
+question_2_response,satisfaction_surveys,5,0,131263,61.6956,"[""3.0"", ""5.0"", ""1.0""]",212759,HIGH
+question_3_text,satisfaction_surveys,1,0,172615,81.1317,[],212759,HIGH
+question_3_response,satisfaction_surveys,5,0,172656,81.151,"[""4.0"", ""4.0"", ""1.0""]",212759,HIGH
+open_comments,satisfaction_surveys,13,0,111563,52.4363,[],212759,HIGH
+comment_sentiment,satisfaction_surveys,3,101257,111502,52.4077,[],212759,HIGH
+response_time_hours,satisfaction_surveys,3473,212759,0,0.0,"[""8.76"", ""10.14"", ""7.7""]",212759,LOW
+campaign_response_rate,satisfaction_surveys,3001,0,32037,15.0579,"[""20.13"", ""22.54"", ""19.95""]",212759,HIGH
+agent_id,service_agents,1200,0,0,0.0,"[""AGT-FGAVR5FA7R"", ""AGT-5DZNKOUR81"", ""AGT-OJ9N4FGYV9""]",1200,LOW
+employee_code,service_agents,1187,0,0,0.0,"[""E23396"", ""E51347"", ""E75612""]",1200,LOW
+first_name,service_agents,444,0,0,0.0,[],1200,LOW
+last_name,service_agents,975,0,0,0.0,[],1200,LOW
+email,service_agents,1188,0,0,0.0,[],1200,LOW
+phone,service_agents,1131,0,69,5.75,[],1200,MEDIUM
+native_accent,service_agents,3,0,0,0.0,"[""mexican"", ""mexican"", ""mexican""]",1200,LOW
+country_of_origin,service_agents,3,0,0,0.0,"[""Mexico"", ""Mexico"", ""Mexico""]",1200,LOW
+assigned_branch_id,service_agents,833,0,367,30.5833,"[""SUC-L138LKPP"", ""SUC-D79XNL6Q"", ""SUC-Z3ECV86G""]",1200,CRITICAL
+agent_type,service_agents,4,0,0,0.0,"[""In-Person"", ""Hybrid"", ""Digital""]",1200,LOW
+experience_level,service_agents,4,0,0,0.0,"[""Mid-Senior"", ""Senior"", ""Senior""]",1200,LOW
+languages,service_agents,4,0,0,0.0,"[""español"", ""español"", ""español""]",1200,LOW
+specialty,service_agents,8,0,476,39.6667,"[""Ventas"", ""Retención"", ""Créditos""]",1200,HIGH
+hire_date,service_agents,1055,0,0,0.0,"[""2025-09-11"", ""2021-08-24"", ""2022-12-07""]",1200,LOW
+avg_csat,service_agents,149,0,134,11.1667,"[""4.43"", ""4.31"", ""4.23""]",1200,HIGH
+total_monthly_interactions,service_agents,559,0,111,9.25,"[""691.0"", ""538.0"", ""471.0""]",1200,MEDIUM
+agent_status,service_agents,4,0,0,0.0,"[""Active"", ""Active"", ""Active""]",1200,LOW
+work_shift,service_agents,4,0,0,0.0,"[""Afternoon"", ""Morning"", ""Morning""]",1200,LOW
+transaction_id,transactions,4425008,0,0,0.0,"[""TRX-7I07NJ7LT0TPC5YC33UL"", ""TRX-5COPO2MJ8G9XO7BR2TSE"", ""TRX-SF2DZJYU0POJ9N4FGYV9""]",4425008,LOW
+transaction_date,transactions,4318242,0,0,0.0,"[""2023-06-17 14:54:58"", ""2023-06-17 14:17:51"", ""2023-06-18 03:17:02""]",4425008,LOW
+process_date,transactions,1097,0,0,0.0,"[""2023-06-17"", ""2023-06-17"", ""2023-06-17""]",4425008,LOW
+product_id,transactions,339963,0,0,0.0,"[""PRD-7EFOVFRUE3UQ"", ""PRD-HMGUZQXKE413"", ""PRD-Z9VH3WRVEJP5""]",4425008,LOW
+customer_id,transactions,134515,0,0,0.0,"[""CLI-DRS40C485MAB"", ""CLI-RIO7AY0XG4MY"", ""CLI-NRCMAC93SWIH""]",4425008,LOW
+transaction_type,transactions,6,0,0,0.0,"[""Deposit"", ""Withdrawal"", ""Withdrawal""]",4425008,LOW
+transaction_category,transactions,6,0,2693520,60.8704,"[""Food"", ""Entertainment"", ""Health""]",4425008,HIGH
+amount,transactions,2570875,0,0,0.0,"[""3695.53"", ""492.91"", ""1200383.22""]",4425008,LOW
+currency,transactions,3,0,0,0.0,"[""USD"", ""USD"", ""COP""]",4425008,LOW
+amount_usd,transactions,528859,0,2537456,57.3435,"[""300.1"", ""29.35"", ""122.6""]",4425008,HIGH
+channel,transactions,6,0,0,0.0,"[""Web"", ""App"", ""POS""]",4425008,LOW
+branch_id,transactions,350,0,3037076,68.6344,"[""SUC-LQXENAY2"", ""SUC-NZJH5BG1"", ""SUC-JDXIVV9S""]",4425008,CRITICAL
+merchant_name,transactions,24,0,3395774,76.7405,[],4425008,HIGH
+merchant_category,transactions,6,0,3396215,76.7505,"[""Food"", ""Entertainment"", ""Health""]",4425008,HIGH
+transaction_country,transactions,7,0,0,0.0,"[""México"", ""México"", ""Argentina""]",4425008,LOW
+transaction_city,transactions,28,0,442611,10.0025,"[""Monterrey"", ""Tijuana"", ""Mendoza""]",4425008,HIGH
+transaction_status,transactions,4,0,0,0.0,"[""Approved"", ""Approved"", ""Approved""]",4425008,LOW
+response_code,transactions,5,0,221033,4.9951,"[""00"", ""00"", ""00""]",4425008,MEDIUM
+is_fraud,transactions,2,0,0,0.0,"[""False"", ""False"", ""False""]",4425008,LOW
+fraud_score,transactions,5014,0,885157,20.0035,"[""0.89"", ""25.02"", ""1.74""]",4425008,HIGH
+latitude,transactions,850555,0,3567680,80.6254,"[""0.8901019"", ""-35.0989023"", ""3.8506202""]",4425008,HIGH
+longitude,transactions,850492,0,3567715,80.6262,"[""0.3820392"", ""-59.1497568"", ""-73.5267497""]",4425008,HIGH

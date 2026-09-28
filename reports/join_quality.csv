@@ -1,0 +1,15 @@
+child_dataset,child_key,child_rows,duplicate_join_key_rate_pct,match_rate_pct,matched_child_keys,orphan_rate_pct,parent_dataset,parent_key,parent_rows,status,unmatched_child_keys
+transactions,customer_id,4425008,100.0,100.0,134515,0.0,customers,customer_id,150000,VERIFIED RELATIONSHIP,0
+transactions,product_id,4425008,99.9971,100.0,339963,0.0,products,product_id,400000,VERIFIED RELATIONSHIP,0
+call_center_interactions,customer_id,686296,95.2123,100.0,148443,0.0,customers,customer_id,150000,VERIFIED RELATIONSHIP,0
+call_center_interactions,agent_id,686296,100.0,100.0,1090,0.0,service_agents,agent_id,1200,VERIFIED RELATIONSHIP,0
+call_transcripts,interaction_id,171321,0.0,100.0,171321,0.0,call_center_interactions,interaction_id,686296,VERIFIED RELATIONSHIP,0
+call_transcripts,customer_id,171321,46.589,100.0,101951,0.0,customers,customer_id,150000,VERIFIED RELATIONSHIP,0
+complaints,customer_id,67095,20.6464,100.0,54145,0.0,customers,customer_id,150000,VERIFIED RELATIONSHIP,0
+complaints,origin_interaction_id,67095,0,0,0,0,call_center_interactions,interaction_id,686296,LIKELY RELATIONSHIP,0
+complaints,assigned_agent_id,67095,100.0,100.0,1200,0.0,service_agents,agent_id,1200,VERIFIED RELATIONSHIP,0
+complaints,affected_product_id,67095,5.4665,100.0,42184,0.0,products,product_id,400000,VERIFIED RELATIONSHIP,0
+satisfaction_surveys,interaction_id,212759,0.0,100.0,212759,0.0,call_center_interactions,interaction_id,686296,VERIFIED RELATIONSHIP,0
+satisfaction_surveys,customer_id,212759,54.6595,100.0,113640,0.0,customers,customer_id,150000,VERIFIED RELATIONSHIP,0
+digital_events,customer_id,15620994,99.9993,100.0,149997,0.0,customers,customer_id,150000,VERIFIED RELATIONSHIP,0
+digital_events,transaction_id,15620994,0,0,0,0,transactions,transaction_id,4425008,LIKELY RELATIONSHIP,0

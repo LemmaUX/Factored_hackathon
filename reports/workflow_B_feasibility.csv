@@ -1,0 +1,5 @@
+criterion,evidence,limitations,metric,status,threshold,value,workflow
+complaint records,observed schema and deterministic scan,reason matching is exploratory,complaint records,PASS,>0,67095,B
+complaint/customer join,observed schema and deterministic scan,reason matching is exploratory,complaint/customer join,PASS,>=95%,100.0,B
+complaint-related interactions,observed schema and deterministic scan,reason matching is exploratory,complaint-related interactions,PASS,>=1000,117021,B
+complaint lifecycle/status,observed schema and deterministic scan,reason matching is exploratory,complaint lifecycle/status,PASS,status and timestamps present,"status, creation_date, resolution_date, closing_date",B

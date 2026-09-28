@@ -1,0 +1,5 @@
+criterion,evidence,limitations,metric,status,threshold,value,workflow
+transaction records,observed schema and deterministic scan,reason matching is exploratory,transaction records,PASS,>0,4425008,A
+transaction/customer join,observed schema and deterministic scan,reason matching is exploratory,transaction/customer join,PASS,>=95%,100.0,A
+transaction-related interactions,observed schema and deterministic scan,reason matching is exploratory,transaction-related interactions,PASS,>=1000,240056,A
+transaction timestamps/status/amount,observed schema and deterministic scan,reason matching is exploratory,transaction timestamps/status/amount,PASS,all present,"transaction_date, transaction_status, amount",A

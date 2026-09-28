@@ -1,0 +1,3 @@
+customer_level_leakage,golden_set_required,relevant_interactions,status,threshold,transcripts,workflow
+REQUIRES REVIEW,YES,240056,PASS,1000,171321,A
+REQUIRES REVIEW,YES,117021,PASS,1000,171321,B
