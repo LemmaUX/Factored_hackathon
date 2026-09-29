@@ -1,0 +1,23 @@
+workflow,metric,value,evidence_type,evidence_status
+A,total_relevant_interactions_or_cases,686296,OBSERVED FACT,EXACT
+A,timestamp_available_rows,686296,DERIVED METRIC,EXACT
+A,outcome_or_proxy_available_rows,686296,OBSERVED FACT,EXACT
+A,survey_coverage_rows_or_cases,212759,DERIVED METRIC,EXACT
+A,unique_customers,148443,DERIVED METRIC,EXACT
+A,repeated_customer_rows,537853,DERIVED METRIC,EXACT
+A,duplicate_primary_key_rows,0,DERIVED METRIC,EXACT
+A,negative_process_event_lag_rows,686296,DERIVED METRIC,EXACT
+A,time_based_dev_validation_holdout_constructible,YES,INFERENCE,EXACT
+A,label_proxy_coverage_pct,100.0,DERIVED METRIC,EXACT
+A,temporal_leakage_risk,PRESENT,INFERENCE,EXACT
+B,total_relevant_interactions_or_cases,67095,OBSERVED FACT,EXACT
+B,timestamp_available_rows,67095,DERIVED METRIC,EXACT
+B,outcome_or_proxy_available_rows,15310,OBSERVED FACT,EXACT
+B,survey_coverage_rows_or_cases,0,DERIVED METRIC,EXACT
+B,unique_customers,54145,DERIVED METRIC,EXACT
+B,repeated_customer_rows,12950,DERIVED METRIC,EXACT
+B,duplicate_primary_key_rows,0,DERIVED METRIC,EXACT
+B,negative_process_event_lag_rows,67095,DERIVED METRIC,EXACT
+B,time_based_dev_validation_holdout_constructible,YES,INFERENCE,EXACT
+B,label_proxy_coverage_pct,22.818392,DERIVED METRIC,EXACT
+B,temporal_leakage_risk,PRESENT,INFERENCE,EXACT

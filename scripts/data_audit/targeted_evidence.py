@@ -12,6 +12,7 @@ import os
 import re
 import sys
 import time
+import traceback
 from collections import defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
@@ -214,6 +215,8 @@ def temporal_profile(con, row_counts: dict[str, int]) -> list[dict]:
         timestamp = f"try_cast(nullif(trim(cast({field} AS VARCHAR)), '') AS TIMESTAMP)"
         distinct_dates, future, malformed = fetch_one(con, f"SELECT count(DISTINCT cast({timestamp} AS DATE)), count(*) FILTER (WHERE {timestamp} > TIMESTAMP {sql_string(TODAY)}), count(*) FILTER (WHERE {nonempty(event_column)} AND {timestamp} IS NULL) FROM {qident(name)}")
         partition_dates = scalar(con, f"SELECT count(DISTINCT ({partition_year}, {partition_month}, {partition_day})) FROM {qident(name)} WHERE {partition_year} IS NOT NULL")
+        partition_min, partition_max = fetch_one(con, f"SELECT min(make_date({partition_year}, {partition_month}, coalesce({partition_day}, 1))), max(make_date({partition_year}, {partition_month}, coalesce({partition_day}, 1))) FROM {qident(name)} WHERE {partition_year} IS NOT NULL AND {partition_month} IS NOT NULL")
+        missing_partition_dates = scalar(con, f"SELECT count(*) FROM generate_series(cast({sql_string(str(partition_min))} AS DATE), cast({sql_string(str(partition_max))} AS DATE), INTERVAL 1 DAY) AS series_day WHERE series_day.generate_series::DATE NOT IN (SELECT DISTINCT make_date({partition_year}, {partition_month}, coalesce({partition_day}, 1)) FROM {qident(name)} WHERE {partition_year} IS NOT NULL AND {partition_month} IS NOT NULL)") if partition_min and partition_max else 0
         aligned = scalar(con, f"SELECT count(*) FROM {qident(name)} WHERE {timestamp} IS NOT NULL AND {partition_year} = year(cast({timestamp} AS DATE)) AND {partition_month} = month(cast({timestamp} AS DATE)) AND ({partition_day} IS NULL OR {partition_day} = day(cast({timestamp} AS DATE)))")
         mismatched = scalar(con, f"SELECT count(*) FROM {qident(name)} WHERE {timestamp} IS NOT NULL AND ({partition_year} IS NULL OR {partition_year} <> year(cast({timestamp} AS DATE)) OR {partition_month} <> month(cast({timestamp} AS DATE)) OR ({partition_day} IS NOT NULL AND {partition_day} <> day(cast({timestamp} AS DATE))))")
         minimum, maximum = fetch_one(con, f"SELECT min({timestamp}), max({timestamp}) FROM {qident(name)}")
@@ -222,7 +225,7 @@ def temporal_profile(con, row_counts: dict[str, int]) -> list[dict]:
             {"dataset": name, "metric": "event_max", "value": maximum or "UNKNOWN", "evidence_status": "EXACT"},
             {"dataset": name, "metric": "distinct_event_dates", "value": distinct_dates, "evidence_status": "EXACT"},
             {"dataset": name, "metric": "partition_dates_represented", "value": partition_dates, "evidence_status": "EXACT"},
-            {"dataset": name, "metric": "missing_partition_dates", "value": "UNKNOWN", "evidence_status": "UNKNOWN", "note": "No calendar-completeness assumption applied"},
+            {"dataset": name, "metric": "missing_partition_dates", "value": missing_partition_dates, "evidence_status": "EXACT", "note": "Gaps between minimum and maximum represented partition dates"},
             {"dataset": name, "metric": "future_timestamps", "value": future, "evidence_status": "EXACT"},
             {"dataset": name, "metric": "malformed_timestamps", "value": malformed, "evidence_status": "EXACT"},
             {"dataset": name, "metric": "event_process_lag", "value": "computed below", "evidence_status": "EXACT"},
@@ -232,8 +235,8 @@ def temporal_profile(con, row_counts: dict[str, int]) -> list[dict]:
         ])
         process = qident("process_date")
         process_ts = f"try_cast(nullif(trim(cast({process} AS VARCHAR)), '') AS TIMESTAMP)"
-        lag_count, negative_lag = fetch_one(con, f"SELECT count(*) FILTER (WHERE {timestamp} IS NOT NULL AND {process_ts} IS NOT NULL), count(*) FILTER (WHERE {timestamp} IS NOT NULL AND {process_ts} IS NOT NULL AND {process_ts} < {timestamp}) FROM {qident(name)}")
-        rows[-4]["value"] = {"rows_with_both_dates": lag_count, "negative_lag_rows": negative_lag}
+        lag_count, negative_lag, minimum_lag, maximum_lag = fetch_one(con, f"SELECT count(*) FILTER (WHERE {timestamp} IS NOT NULL AND {process_ts} IS NOT NULL), count(*) FILTER (WHERE {timestamp} IS NOT NULL AND {process_ts} IS NOT NULL AND {process_ts} < {timestamp}), min(date_diff('second', {timestamp}, {process_ts})), max(date_diff('second', {timestamp}, {process_ts})) FROM {qident(name)}")
+        rows[-4]["value"] = {"rows_with_both_dates": lag_count, "negative_lag_rows": negative_lag, "minimum_lag_seconds": minimum_lag, "maximum_lag_seconds": maximum_lag}
     return rows
 
 
@@ -278,12 +281,12 @@ def workflow_b(con, row_counts: dict[str, int], joins: list[dict]) -> list[dict]
         rows.append({"workflow": "B", "metric": f"distribution_{column}", "value": count_where(con, "complaints", nonempty(column)), "evidence_type": "OBSERVED FACT", "evidence_status": "EXACT"})
     for column in ("resolution_date", "closing_date", "resolution_satisfaction"):
         rows.append({"workflow": "B", "metric": f"{column}_availability", "value": count_where(con, "complaints", nonempty(column)), "evidence_type": "DERIVED METRIC", "evidence_status": "EXACT"})
+    join_rates = {item["child_key"]: item["match_rate_pct"] for item in joins if item["child_dataset"] == "complaints"}
     for metric, column in (("sla_breach_rate", "sla_breached"), ("assignment_rate", "assigned_agent_id"), ("customer_linkage_rate", "customer_id"), ("product_linkage_rate", "affected_product_id"), ("agent_linkage_rate", "assigned_agent_id"), ("interaction_origin_linkage_rate", "origin_interaction_id")):
-        value = count_where(con, "complaints", nonempty(column))
-        if metric == "interaction_origin_linkage_rate":
-            value = next(item["match_rate_pct"] for item in joins if item["child_dataset"] == "complaints" and item["child_key"] == column)
-        elif metric.endswith("rate"):
-            value = round(value / row_counts["complaints"] * 100, 6) if row_counts["complaints"] else 0
+        if metric == "sla_breach_rate":
+            value = round(count_where(con, "complaints", "lower(cast(sla_breached AS VARCHAR)) IN ('true', 'yes', '1')") / row_counts["complaints"] * 100, 6) if row_counts["complaints"] else 0
+        else:
+            value = join_rates.get(column, 0)
         rows.append({"workflow": "B", "metric": metric, "value": value, "evidence_type": "DERIVED METRIC", "evidence_status": "EXACT"})
     complaint_interactions = scalar(con, "SELECT count(*) FROM call_center_interactions i INNER JOIN complaints c ON trim(cast(i.interaction_id AS VARCHAR)) = trim(cast(c.origin_interaction_id AS VARCHAR)) WHERE " + nonempty("origin_interaction_id"))
     rows.append({"workflow": "B", "metric": "complaint_related_interaction_volume", "value": complaint_interactions, "evidence_type": "DERIVED METRIC", "evidence_status": "EXACT"})
@@ -301,7 +304,7 @@ def evaluation(con, row_counts: dict[str, int], joins: list[dict]) -> list[dict]
         dated = count_where(con, dataset, f"try_cast(nullif(trim(cast({qident(date_column)} AS VARCHAR)), '') AS TIMESTAMP) IS NOT NULL")
         repeated = scalar(con, f"SELECT coalesce(sum(n - 1) FILTER (WHERE n > 1), 0) FROM (SELECT trim(cast({qident(customer_column)} AS VARCHAR)) AS customer_id, count(*) AS n FROM {qident(dataset)} WHERE {nonempty(customer_column)} GROUP BY 1)")
         customers = scalar(con, f"SELECT count(DISTINCT trim(cast({qident(customer_column)} AS VARCHAR))) FROM {qident(dataset)} WHERE {nonempty(customer_column)}")
-        survey_coverage = scalar(con, f"SELECT count(DISTINCT trim(cast(i.interaction_id AS VARCHAR))) FROM {qident('call_center_interactions')} i INNER JOIN {qident('satisfaction_surveys')} s ON trim(cast(i.interaction_id AS VARCHAR)) = trim(cast(s.interaction_id AS VARCHAR)) WHERE {nonempty('interaction_id')} AND try_cast(nullif(trim(cast(i.interaction_date AS VARCHAR)), '') AS TIMESTAMP) IS NOT NULL") if workflow == "A" else scalar(con, f"SELECT count(DISTINCT trim(cast(c.complaint_id AS VARCHAR))) FROM complaints c INNER JOIN satisfaction_surveys s ON trim(cast(c.origin_interaction_id AS VARCHAR)) = trim(cast(s.interaction_id AS VARCHAR)) WHERE {nonempty('origin_interaction_id')}")
+        survey_coverage = scalar(con, f"SELECT count(DISTINCT trim(cast(i.interaction_id AS VARCHAR))) FROM {qident('call_center_interactions')} i INNER JOIN {qident('satisfaction_surveys')} s ON trim(cast(i.interaction_id AS VARCHAR)) = trim(cast(s.interaction_id AS VARCHAR)) WHERE i.interaction_id IS NOT NULL AND trim(cast(i.interaction_id AS VARCHAR)) <> '' AND try_cast(nullif(trim(cast(i.interaction_date AS VARCHAR)), '') AS TIMESTAMP) IS NOT NULL") if workflow == "A" else scalar(con, f"SELECT count(DISTINCT trim(cast(c.complaint_id AS VARCHAR))) FROM {qident('complaints')} c INNER JOIN {qident('satisfaction_surveys')} s ON trim(cast(c.origin_interaction_id AS VARCHAR)) = trim(cast(s.interaction_id AS VARCHAR)) WHERE c.origin_interaction_id IS NOT NULL AND trim(cast(c.origin_interaction_id AS VARCHAR)) <> ''")
         process_col = "process_date"
         negative_lag = count_where(con, dataset, f"try_cast(nullif(trim(cast({qident(process_col)} AS VARCHAR)), '') AS TIMESTAMP) IS NOT NULL AND try_cast(nullif(trim(cast({qident(date_column)} AS VARCHAR)), '') AS TIMESTAMP) IS NOT NULL AND try_cast(nullif(trim(cast({qident(process_col)} AS VARCHAR)), '') AS TIMESTAMP) < try_cast(nullif(trim(cast({qident(date_column)} AS VARCHAR)), '') AS TIMESTAMP)")
         relevant = row_counts["call_center_interactions"] if workflow == "A" else row_counts["complaints"]
@@ -359,10 +362,10 @@ All fifteen requested joins were measured from actual values. A relationship is 
 
 Language was read only from `call_transcripts.detected_language`.
 
-- Spanish observed: **{yes_no('spanish|español|espanol')}**
-- Portuguese observed: **{yes_no('portugu')}**
-- English observed: **{yes_no('english|inglés|ingles')}**
-- Other observed values: `{', '.join(name for name in language_names if not re.search('spanish|español|espanol|portugu|english|inglés|ingles', name, re.I)) or 'NONE'}`
+- Spanish observed: **{yes_no(r'(^|[^a-z])es($|[^a-z])|spanish|español|espanol')}**
+- Portuguese observed: **{yes_no(r'(^|[^a-z])pt($|[^a-z])|portugu')}**
+- English observed: **{yes_no(r'(^|[^a-z])en($|[^a-z])|english|inglés|ingles')}**
+- Other observed values: `{', '.join(name for name in language_names if not re.search(r'(^|[^a-z])(es|pt|en)($|[^a-z])|spanish|español|espanol|portugu|english|inglés|ingles', name, re.I)) or 'NONE'}`
 
 ### Workflow A
 
@@ -404,20 +407,24 @@ def main() -> int:
     started = time.perf_counter()
     CACHE_ROOT.mkdir(parents=True, exist_ok=True)
     REPORTS.mkdir(parents=True, exist_ok=True)
+    (CACHE_ROOT / "tmp").mkdir(parents=True, exist_ok=True)
     con = duckdb.connect(str(DB_PATH))
     con.execute("PRAGMA threads=4")
-    con.execute("PRAGMA memory_limit='2GB'")
+    con.execute("PRAGMA memory_limit='512MB'")
     con.execute(f"PRAGMA temp_directory={sql_string(str(CACHE_ROOT / 'tmp'))}")
     con.execute("PRAGMA preserve_insertion_order=false")
     try:
         row_counts = make_cache(con)
         con.execute("CHECKPOINT")
         print("cache checkpointed", flush=True)
+        print("profiling dataset scale and relevant quality", flush=True)
         profiles = dataset_profile(con, row_counts)
         quality = quality_profile(con, row_counts)
+        print("profiling keys, joins, and temporal evidence", flush=True)
         keys = key_profile(con, row_counts)
         joins = join_profile(con, row_counts)
         temporal = temporal_profile(con, row_counts)
+        print("profiling distributions and workflow evidence", flush=True)
         distributions = []
         for dataset, columns, family in (("transactions", ["transaction_status", "transaction_category", "transaction_type", "response_code"], "workflow_A_transactions"), ("call_center_interactions", ["contact_reason", "reason_category", "interaction_type"], "workflow_A_interactions"), ("complaints", ["category", "subcategory", "case_type", "priority", "status", "resolution"], "workflow_B_complaints")):
             for column in columns:
@@ -426,6 +433,7 @@ def main() -> int:
         a_rows = workflow_a(con, row_counts, distributions)
         b_rows = workflow_b(con, row_counts, joins)
         eval_rows = evaluation(con, row_counts, joins)
+        print("writing evidence reports", flush=True)
         runtime = time.perf_counter() - started
         con.close()
         cache_size = DB_PATH.stat().st_size
@@ -435,7 +443,7 @@ def main() -> int:
         write_csv(REPORTS / "08_workflow_A_feasibility.csv", distributions + a_rows)
         write_csv(REPORTS / "09_workflow_B_feasibility.csv", distributions + b_rows)
         write_csv(REPORTS / "10_evaluation_feasibility.csv", eval_rows)
-        manifest = {"script": "targeted_evidence.py", "execution_utc": datetime.now(timezone.utc).isoformat(), "data_root": str(DATA), "cache_path": str(DB_PATH), "cache_size_bytes": cache_size, "duckdb_version": duckdb.__version__, "duckdb_threads": 4, "datasets_processed": list(DATASETS), "excluded_datasets": ["digital_events", "campaign_sends"], "row_counts": row_counts, "rows_are": "EXACT", "raw_files_read_only": True, "transcript_text_materialized": False, "runtime_seconds": round(runtime, 3), "warnings": ["Missing partition calendar dates are UNKNOWN without an external calendar contract.", "Outcome fields and language values are observed fields, not independently adjudicated labels."], "errors": []}
+        manifest = {"script": "targeted_evidence.py", "execution_utc": datetime.now(timezone.utc).isoformat(), "data_root": str(DATA), "cache_path": str(DB_PATH), "cache_size_bytes": cache_size, "duckdb_version": duckdb.__version__, "duckdb_threads": 4, "datasets_processed": list(DATASETS), "excluded_datasets": ["digital_events", "campaign_sends"], "row_counts": row_counts, "rows_are": "EXACT", "raw_files_read_only": True, "transcript_text_materialized": False, "runtime_seconds": round(runtime, 3), "warnings": ["Partition gaps are exact only within the observed minimum-to-maximum date span; external calendar completeness remains UNKNOWN.", "Outcome fields and language values are observed fields, not independently adjudicated labels."], "errors": []}
         (REPORTS / "analysis_cache_manifest.json").write_text(json.dumps(manifest, indent=2, default=json_default), encoding="utf-8")
         report = render_report(row_counts, profiles, quality, keys, joins, temporal, languages, a_rows, b_rows, eval_rows, runtime, cache_size)
         (REPORTS / "TARGETED_EVIDENCE_REPORT.md").write_text(report, encoding="utf-8")
@@ -456,6 +464,7 @@ def main() -> int:
         try:
             con.close()
         finally:
+            traceback.print_exc()
             print(f"TARGETED_EVIDENCE_ERROR: {exc}", file=sys.stderr, flush=True)
         return 1
 

@@ -1,0 +1,92 @@
+dataset,field,category,rows,percentage,distribution_family,evidence_status
+transactions,transaction_status,Approved,4070681,91.992625,workflow_A_transactions,OBSERVED FACT
+transactions,transaction_status,Declined,221234,4.999629,workflow_A_transactions,OBSERVED FACT
+transactions,transaction_status,Pending,88343,1.996448,workflow_A_transactions,OBSERVED FACT
+transactions,transaction_status,Reversed,44750,1.011298,workflow_A_transactions,OBSERVED FACT
+transactions,transaction_category,UNKNOWN,2693520,60.870398,workflow_A_transactions,OBSERVED FACT
+transactions,transaction_category,Food,432468,9.77327,workflow_A_transactions,OBSERVED FACT
+transactions,transaction_category,Services,345370,7.804958,workflow_A_transactions,OBSERVED FACT
+transactions,transaction_category,Other,260518,5.887402,workflow_A_transactions,OBSERVED FACT
+transactions,transaction_category,Transport,260316,5.882837,workflow_A_transactions,OBSERVED FACT
+transactions,transaction_category,Entertainment,259643,5.867628,workflow_A_transactions,OBSERVED FACT
+transactions,transaction_category,Health,173173,3.913507,workflow_A_transactions,OBSERVED FACT
+transactions,transaction_type,Purchase,1083406,24.483707,workflow_A_transactions,OBSERVED FACT
+transactions,transaction_type,Withdrawal,964673,21.80048,workflow_A_transactions,OBSERVED FACT
+transactions,transaction_type,Transfer,896438,20.258449,workflow_A_transactions,OBSERVED FACT
+transactions,transaction_type,Payment,738964,16.699721,workflow_A_transactions,OBSERVED FACT
+transactions,transaction_type,Deposit,609409,13.77193,workflow_A_transactions,OBSERVED FACT
+transactions,transaction_type,Adjustment,132118,2.985712,workflow_A_transactions,OBSERVED FACT
+transactions,response_code,00,3867312,87.396723,workflow_A_transactions,OBSERVED FACT
+transactions,response_code,UNKNOWN,221033,4.995087,workflow_A_transactions,OBSERVED FACT
+transactions,response_code,14,84472,1.908968,workflow_A_transactions,OBSERVED FACT
+transactions,response_code,51,84179,1.902347,workflow_A_transactions,OBSERVED FACT
+transactions,response_code,05,84141,1.901488,workflow_A_transactions,OBSERVED FACT
+transactions,response_code,54,83871,1.895386,workflow_A_transactions,OBSERVED FACT
+call_center_interactions,contact_reason,Transaccional,240056,34.978493,workflow_A_interactions,OBSERVED FACT
+call_center_interactions,contact_reason,Producto,150863,21.982206,workflow_A_interactions,OBSERVED FACT
+call_center_interactions,contact_reason,Queja,117021,17.051097,workflow_A_interactions,OBSERVED FACT
+call_center_interactions,contact_reason,Técnico,102899,14.993385,workflow_A_interactions,OBSERVED FACT
+call_center_interactions,contact_reason,Comercial,54879,7.996404,workflow_A_interactions,OBSERVED FACT
+call_center_interactions,contact_reason,Retención,20578,2.998415,workflow_A_interactions,OBSERVED FACT
+call_center_interactions,reason_category,Transaccional,240056,34.978493,workflow_A_interactions,OBSERVED FACT
+call_center_interactions,reason_category,Producto,150863,21.982206,workflow_A_interactions,OBSERVED FACT
+call_center_interactions,reason_category,Queja,117021,17.051097,workflow_A_interactions,OBSERVED FACT
+call_center_interactions,reason_category,Técnico,102899,14.993385,workflow_A_interactions,OBSERVED FACT
+call_center_interactions,reason_category,Comercial,54879,7.996404,workflow_A_interactions,OBSERVED FACT
+call_center_interactions,reason_category,Retención,20578,2.998415,workflow_A_interactions,OBSERVED FACT
+call_center_interactions,interaction_type,Inbound Call,480678,70.039458,workflow_A_interactions,OBSERVED FACT
+call_center_interactions,interaction_type,Outbound Call,102572,14.945738,workflow_A_interactions,OBSERVED FACT
+call_center_interactions,interaction_type,Chat,68691,10.008947,workflow_A_interactions,OBSERVED FACT
+call_center_interactions,interaction_type,Email,27543,4.013283,workflow_A_interactions,OBSERVED FACT
+call_center_interactions,interaction_type,Video,6812,0.992575,workflow_A_interactions,OBSERVED FACT
+complaints,category,Transactions,13580,20.239958,workflow_B_complaints,OBSERVED FACT
+complaints,category,Fees,13553,20.199717,workflow_B_complaints,OBSERVED FACT
+complaints,category,Technical,13407,19.982115,workflow_B_complaints,OBSERVED FACT
+complaints,category,Branch,13361,19.913555,workflow_B_complaints,OBSERVED FACT
+complaints,category,Service,13194,19.664655,workflow_B_complaints,OBSERVED FACT
+complaints,subcategory,Cargo no reconocido,12297,18.327744,workflow_B_complaints,OBSERVED FACT
+complaints,subcategory,Cobro indebido,12194,18.174231,workflow_B_complaints,OBSERVED FACT
+complaints,subcategory,Problema con app,12128,18.075863,workflow_B_complaints,OBSERVED FACT
+complaints,subcategory,Atención en sucursal,11892,17.724123,workflow_B_complaints,OBSERVED FACT
+complaints,subcategory,Calidad de servicio,11886,17.71518,workflow_B_complaints,OBSERVED FACT
+complaints,subcategory,UNKNOWN,6698,9.98286,workflow_B_complaints,OBSERVED FACT
+complaints,case_type,Complaint,40452,60.290633,workflow_B_complaints,OBSERVED FACT
+complaints,case_type,Claim,16598,24.738058,workflow_B_complaints,OBSERVED FACT
+complaints,case_type,Request,6761,10.076757,workflow_B_complaints,OBSERVED FACT
+complaints,case_type,Suggestion,3284,4.894553,workflow_B_complaints,OBSERVED FACT
+complaints,priority,Medium,33439,49.838289,workflow_B_complaints,OBSERVED FACT
+complaints,priority,Low,20411,30.421045,workflow_B_complaints,OBSERVED FACT
+complaints,priority,High,9890,14.740294,workflow_B_complaints,OBSERVED FACT
+complaints,priority,Critical,3355,5.000373,workflow_B_complaints,OBSERVED FACT
+complaints,status,In Process,26823,39.977644,workflow_B_complaints,OBSERVED FACT
+complaints,status,Open,20125,29.994784,workflow_B_complaints,OBSERVED FACT
+complaints,status,Resolved,13512,20.138609,workflow_B_complaints,OBSERVED FACT
+complaints,status,Escalated,3321,4.949698,workflow_B_complaints,OBSERVED FACT
+complaints,status,Closed,2609,3.888516,workflow_B_complaints,OBSERVED FACT
+complaints,status,Rejected,705,1.050749,workflow_B_complaints,OBSERVED FACT
+complaints,resolution,UNKNOWN,51785,77.181608,workflow_B_complaints,OBSERVED FACT
+complaints,resolution,Se revisó el caso y se realizó el ajuste correspondiente en la cuenta del cliente.,3132,4.668008,workflow_B_complaints,OBSERVED FACT
+complaints,resolution,Se escaló a área correspondiente y se aplicó la solución definitiva.,3098,4.617334,workflow_B_complaints,OBSERVED FACT
+complaints,resolution,Se brindó explicación detallada al cliente y se resolvió la situación.,3078,4.587525,workflow_B_complaints,OBSERVED FACT
+complaints,resolution,Se otorgó compensación al cliente por las molestias ocasionadas.,3034,4.521946,workflow_B_complaints,OBSERVED FACT
+complaints,resolution,Se verificó la información y se procedió con la corrección solicitada.,2968,4.423579,workflow_B_complaints,OBSERVED FACT
+,,,,,,EXACT
+,,,,,,EXACT
+,,,,,,EXACT
+,,,,,,EXACT
+,,,,,,EXACT
+,,,,,,EXACT
+,,,,,,EXACT
+,,,,,,EXACT
+,,,,,,EXACT
+,,,,,,EXACT
+,,,,,,EXACT
+,,,,,,EXACT
+,,,,,,EXACT
+,,,,,,EXACT
+,,,,,,EXACT
+,,,,,,EXACT
+,,,,,,EXACT
+,,,,,,EXACT
+,,,,,,EXACT
+,,,,,,EXACT

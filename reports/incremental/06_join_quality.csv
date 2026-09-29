@@ -1,0 +1,16 @@
+child_dataset,child_key,parent_dataset,parent_key,child_row_count,non_null_child_keys,distinct_child_keys,matched_distinct_keys,unmatched_distinct_keys,match_rate_pct,orphan_rate_pct,parent_duplicate_key_rate_pct,status
+products,customer_id,customers,customer_id,400000,400000,139578,139578,0,100.0,0.0,0.0,OBSERVED RELATIONSHIP
+transactions,customer_id,customers,customer_id,4425008,4425008,134515,134515,0,100.0,0.0,0.0,OBSERVED RELATIONSHIP
+transactions,product_id,products,product_id,4425008,4425008,339963,339963,0,100.0,0.0,0.0,OBSERVED RELATIONSHIP
+call_center_interactions,customer_id,customers,customer_id,686296,686296,148443,148443,0,100.0,0.0,0.0,OBSERVED RELATIONSHIP
+call_center_interactions,agent_id,service_agents,agent_id,686296,686296,1090,1090,0,100.0,0.0,0.0,OBSERVED RELATIONSHIP
+call_transcripts,interaction_id,call_center_interactions,interaction_id,171321,171321,171321,171321,0,100.0,0.0,0.0,OBSERVED RELATIONSHIP
+call_transcripts,customer_id,customers,customer_id,171321,171321,101951,101951,0,100.0,0.0,0.0,OBSERVED RELATIONSHIP
+call_transcripts,agent_id,service_agents,agent_id,171321,171321,1090,1090,0,100.0,0.0,0.0,OBSERVED RELATIONSHIP
+complaints,customer_id,customers,customer_id,67095,67095,54145,54145,0,100.0,0.0,0.0,OBSERVED RELATIONSHIP
+complaints,affected_product_id,products,product_id,67095,44570,42184,42184,0,100.0,0.0,0.0,OBSERVED RELATIONSHIP
+complaints,origin_interaction_id,call_center_interactions,interaction_id,67095,0,0,0,0,0,0,0.0,OBSERVED RELATIONSHIP
+complaints,assigned_agent_id,service_agents,agent_id,67095,43980,1200,1200,0,100.0,0.0,0.0,OBSERVED RELATIONSHIP
+satisfaction_surveys,interaction_id,call_center_interactions,interaction_id,212759,212759,212759,212759,0,100.0,0.0,0.0,OBSERVED RELATIONSHIP
+satisfaction_surveys,customer_id,customers,customer_id,212759,212759,113640,113640,0,100.0,0.0,0.0,OBSERVED RELATIONSHIP
+satisfaction_surveys,agent_id,service_agents,agent_id,212759,212759,1090,1090,0,100.0,0.0,0.0,OBSERVED RELATIONSHIP

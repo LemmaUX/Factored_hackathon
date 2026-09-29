@@ -1,0 +1,42 @@
+{
+  "script": "targeted_evidence.py",
+  "execution_utc": "2026-09-29T15:43:13.565533+00:00",
+  "data_root": "C:\\Users\\anali\\OneDrive\\Desktop\\Senior\\Factored_hackton\\data",
+  "cache_path": "C:\\Users\\anali\\AppData\\Local\\Factored_hackathon_audit\\targeted_evidence.duckdb",
+  "cache_size_bytes": 783560704,
+  "duckdb_version": "1.5.5",
+  "duckdb_threads": 4,
+  "datasets_processed": [
+    "customers",
+    "products",
+    "service_agents",
+    "transactions",
+    "call_center_interactions",
+    "call_transcripts",
+    "complaints",
+    "satisfaction_surveys"
+  ],
+  "excluded_datasets": [
+    "digital_events",
+    "campaign_sends"
+  ],
+  "row_counts": {
+    "customers": 150000,
+    "products": 400000,
+    "service_agents": 1200,
+    "transactions": 4425008,
+    "call_center_interactions": 686296,
+    "call_transcripts": 171321,
+    "complaints": 67095,
+    "satisfaction_surveys": 212759
+  },
+  "rows_are": "EXACT",
+  "raw_files_read_only": true,
+  "transcript_text_materialized": false,
+  "runtime_seconds": 140.517,
+  "warnings": [
+    "Partition gaps are exact only within the observed minimum-to-maximum date span; external calendar completeness remains UNKNOWN.",
+    "Outcome fields and language values are observed fields, not independently adjudicated labels."
+  ],
+  "errors": []
+}
