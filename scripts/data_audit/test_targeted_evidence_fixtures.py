@@ -138,8 +138,14 @@ def test_temporal_metrics_present_and_same_day_not_leakage(sandbox):
     # datasets without scoped process_date are NOT_APPLICABLE, never fabricated zeros
     cust = {r["metric"]: r["value"] for r in rows if r.get("dataset") == "customers"}
     assert cust["row_count"] == "2"
+    # satisfaction_surveys HAS a scoped process_date (survey 2026-01-11 vs process
+    # 2026-01-11 -> same calendar day), so the metric is genuinely computable and
+    # correctly evaluates to 0. Datasets lacking process_date stay NOT_APPLICABLE.
     scr = {r["metric"]: r["value"] for r in rows if r.get("dataset") == "satisfaction_surveys"}
-    assert scr["process_before_event_count"] == "NOT_APPLICABLE"
+    assert scr["process_before_event_count"] == "0"
+    assert scr["same_calendar_day_count"] == "1"
+    if "process_before_event_count" in cust:
+        assert cust["process_before_event_count"] == "NOT_APPLICABLE"
 
 
 def test_workflow_b_origin_fk_rules_on_real_run(sandbox):
