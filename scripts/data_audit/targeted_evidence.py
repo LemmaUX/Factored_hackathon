@@ -288,8 +288,15 @@ def table_source(name: str) -> str:
     if single.is_file():
         return sql_string(_glob_pattern(single))
     hive = DATA / name / "**" / "*.csv"
+    # DuckDB globs are recursive only for '**' as a whole path component, so match the
+    # Hive layout explicitly with year=*/month=*/day=*/*.csv (fix #10 keeps this scan
+    # cheap: one bounded directory listing per dataset).
+    hive_root = DATA / name
+    if any(p.parent.name.startswith("day=") and p.parent.parent.name.startswith("month=")
+           and p.parent.parent.parent.name.startswith("year=")
+           for p in hive_root.rglob("*.csv")):
+        return sql_string(_glob_pattern(hive_root / "year=*" / "month=*" / "day=*" / "*.csv"))
     if any(p.parent.name.startswith("year=") for p in Path(str(hive)).glob("*/*/*/*.csv")):
-        # hive layout year=*/month=*/day=*: the three-level glob matches exactly
         return sql_string(_glob_pattern(hive))
     plain = DATA / name / "*.csv"
     if next(plain.glob("*.csv"), None):
@@ -337,19 +344,23 @@ def physical_column_names(sniffed_columns: list[str], hive_partitioning: bool) -
     return [c for c in sniffed_columns if c not in HIVE_PARTITION_KEYS and "=" not in c]
 
 
-def make_cache(con, hive_partitioning: bool | None = None) -> dict[str, int]:
+def make_cache(con, hive_partitioning: bool | None = None,
+               datasets: tuple[str, ...] | list[str] | None = None) -> dict[str, int]:
     """Single-pass materialization of scoped columns.
 
     hive_partitioning is auto-detected once per run (fix #10: no repeated full scans);
     tests may pass an explicit value for synthetic fixtures without year=/month=/day=
-    partitions.
+    partitions. `datasets` optionally restricts which DATASETS entries are materialized
+    (test-only scoping; production runs use the full set).
     """
     if hive_partitioning is None:
         hive_partitioning = any((DATA / name).is_dir() and next((DATA / name).rglob("year=*"), None) is not None
                                 for name in DATASETS)
+    selected = [(name, columns) for name, columns in DATASETS.items()
+                if datasets is None or name in datasets]
     row_counts = {}
-    for index, (name, columns) in enumerate(DATASETS.items(), 1):
-        print(f"[{index}/{len(DATASETS)}] materializing {name}", flush=True)
+    for index, (name, columns) in enumerate(selected, 1):
+        print(f"[{index}/{len(selected)}] materializing {name}", flush=True)
         source = table_source(name)
         con.execute(f"DROP TABLE IF EXISTS {qident(name)}")
         sniff_cols = [r[0] for r in con.execute(f"SELECT column_name FROM (DESCRIBE SELECT * FROM read_csv({source}, header=true, union_by_name=true, sample_size=-1, hive_partitioning={hive_partitioning}))").fetchall()]

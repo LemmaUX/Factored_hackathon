@@ -67,13 +67,19 @@ def hive_tree(tmp_path):
     """Synthetic Hive-partitioned transactions tree: 22 physical columns, 2 partitions."""
     _write_partition(tmp_path, "2026", "01", "10", [_row("A")])
     _write_partition(tmp_path, "2026", "01", "11", [_row("B")])
+    # snapshot production paths, restore them on teardown (no global mutation leaks)
+    saved = (te.DATA, te.REPORTS, te.CACHE_ROOT, te.DB_PATH)
     te.configure_paths(data_root=tmp_path / "data", reports_dir=tmp_path / "reports",
                        cache_root=tmp_path / "cache")
     try:
         yield tmp_path
     finally:
-        te.configure_paths(data_root=te.ROOT / "data", reports_dir=te.ROOT / "reports" / "incremental",
-                           cache_root=Path(sys.modules["os"].environ.get("LOCALAPPDATA", str(te.ROOT))))
+        te.DATA, te.REPORTS, te.CACHE_ROOT, te.DB_PATH = saved
+
+
+def _hive_source(hive_tree: Path) -> str:
+    """DuckDB-readable glob over the synthetic Hive tree (year=*/month=*/day=*/*.csv)."""
+    return str(hive_tree / "data" / "transactions" / "year=*" / "month=*" / "day=*" / "*.csv")
 
 
 def _physical_column_map(source: str, hive_partitioning: bool) -> tuple[list[str], list[str]]:
@@ -92,10 +98,9 @@ def _physical_column_map(source: str, hive_partitioning: bool) -> tuple[list[str
 # 1. The sniffed relation has 25 columns but only 22 are physical
 # ---------------------------------------------------------------------------
 def test_sniffed_relation_exposes_25_columns_but_only_22_are_physical(hive_tree):
-    source = str(hive_tree / "data" / "transactions" / "**" / "*.csv").replace("\\", "/")
-    sniffed, physical = _physical_column_map(source, hive_partitioning=True)
+    sniffed, physical = _physical_column_map(_hive_source(hive_tree), hive_partitioning=True)
     assert len(sniffed) == 25, f"expected 22 physical + 3 virtual = 25 query-visible columns, got {sniffed}"
-    assert len(physical) == 22, f"columns={} map must carry exactly the 22 physical columns, got {len(physical)}"
+    assert len(physical) == 22, "the physical columns={{...}} map must carry exactly the 22 physical columns"
     assert set(HIVE_KEYS) <= set(sniffed), "Hive keys must be present in the sniffed relation"
     assert not (set(HIVE_KEYS) & set(physical)), "day/month/year must never enter the physical columns map"
     assert physical == TRANSACTION_PHYSICAL_COLUMNS
@@ -116,7 +121,7 @@ def test_physical_column_names_is_hive_partitioning_aware():
 def test_make_cache_materializes_hive_transactions_with_25_query_visible_columns(hive_tree):
     con = duckdb.connect()
     try:
-        counts = te.make_cache(con, hive_partitioning=True)
+        counts = te.make_cache(con, hive_partitioning=True, datasets=("transactions",))
         columns = [r[0] for r in con.execute("DESCRIBE SELECT * FROM transactions").fetchall()]
         # 13 scoped DATASETS columns + __source_file + day/month/year (Hive-derived)
         assert len(columns) == 17, columns
@@ -148,7 +153,7 @@ def test_read_csv_sql_uses_physical_columns_only_and_keeps_hive_partitioning(hiv
     monkeypatch.setattr(duckdb.DuckDBPyConnection, "execute", spy)
     con = duckdb.connect()
     try:
-        te.make_cache(con, hive_partitioning=True)
+        te.make_cache(con, hive_partitioning=True, datasets=("transactions",))
     finally:
         con.close()
     create = next(q for q in captured if q.startswith("CREATE TABLE \"transactions\""))
