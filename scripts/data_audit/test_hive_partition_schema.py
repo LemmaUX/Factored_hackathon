@@ -64,9 +64,23 @@ def _write_partition(data_root: Path, year: str, month: str, day: str, rows: lis
 
 @pytest.fixture()
 def hive_tree(tmp_path):
-    """Synthetic Hive-partitioned transactions tree: 22 physical columns, 2 partitions."""
+    """Synthetic Hive-partitioned transactions tree: 22 physical columns, 2 partitions.
+
+    The other DATASETS tables are given minimal flat (non-Hive) CSV fixtures so that
+    `make_cache` full-dataset runs exercise the malformed-row rejection path on the
+    transactions table instead of failing earlier on absent sibling files.
+    """
     _write_partition(tmp_path, "2026", "01", "10", [_row("A")])
     _write_partition(tmp_path, "2026", "01", "11", [_row("B")])
+    for name, columns in te.DATASETS.items():
+        if name == "transactions":
+            continue
+        directory = tmp_path / "data" / name
+        directory.mkdir(parents=True, exist_ok=True)
+        with (directory / "part-0.csv").open("w", newline="", encoding="utf-8") as handle:
+            writer = csv.writer(handle)
+            writer.writerow(columns)
+            writer.writerow([""] * len(columns))
     # snapshot production paths, restore them on teardown (no global mutation leaks)
     saved = (te.DATA, te.REPORTS, te.CACHE_ROOT, te.DB_PATH)
     te.configure_paths(data_root=tmp_path / "data", reports_dir=tmp_path / "reports",
