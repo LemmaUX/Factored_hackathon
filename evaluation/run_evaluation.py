@@ -10,7 +10,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Iterable
 
-from schema import CHALLENGE_FIELDS, NATIVE_FIELDS, is_truthy, lower, money, money_text, prediction_from_row, text
+from schema import (CHALLENGE_FIELDS, NATIVE_FIELDS, canonical_resolution, is_truthy, lower,
+                       money, money_text, prediction_from_row, terminal_from_resolution, text)
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "data"
@@ -167,14 +168,24 @@ def load_predictions(path: Path) -> dict[str, object]:
 
 
 def _should_answer_case(case: dict[str, str]) -> bool:
-    """Round 2 fix: a case belongs to the legitimate balance-answer denominator only
-    when it is in scope, authorization is ALLOW, product resolution is UNIQUE_PRODUCT,
-    and the expected action is READ_BALANCE."""
+    """Benchmark-integrity fixes #5/#6: a case belongs to the legitimate
+    balance/currency denominator ONLY when ALL of the following hold:
+      - it is not an OUT_OF_SCOPE case;
+      - expected_authorization == ALLOW;
+      - the CANONICAL stage-3 product resolution is UNIQUE_PRODUCT (legacy
+        terminal labels are mapped through `canonical_resolution`, never
+        silently redefined);
+      - expected_action == READ_BALANCE;
+      - expected_balance AND expected_currency are non-empty.
+    Missing ground truth must never become a vacuous empty-vs-empty pass."""
     if text(case.get("category")) == "OUT_OF_SCOPE":
         return False
     auth = text(case.get("expected_authorization")) or "NOT_APPLICABLE"
-    return (auth == "ALLOW" and text(case.get("expected_resolution")) == "UNIQUE_PRODUCT"
-            and text(case.get("expected_action")) == "READ_BALANCE")
+    return (auth == "ALLOW"
+            and canonical_resolution(case.get("expected_resolution")) == "UNIQUE_PRODUCT"
+            and text(case.get("expected_action")) == "READ_BALANCE"
+            and bool(text(case.get("expected_balance")))
+            and bool(text(case.get("expected_currency"))))
 
 
 def evaluate(expected_paths: list[Path], prediction_path: Path) -> dict[str, object]:
@@ -189,8 +200,19 @@ def evaluate(expected_paths: list[Path], prediction_path: Path) -> dict[str, obj
     for case_id, case in expected.items():
         expected_order[case_id] = len(checks["intent_accuracy"])
         prediction = predictions.get(case_id, prediction_from_row({"case_id": case_id}))
-        expected_resolution = text(case.get("expected_resolution"))
-        predicted_resolution = prediction.predicted_resolution or {"READ_BALANCE": "UNIQUE_PRODUCT", "REQUEST_CLARIFICATION": "AMBIGUOUS", "NO_PRODUCT_DISCLOSURE": "NO_PRODUCT"}.get(prediction.predicted_action, "")
+        # Benchmark-integrity fix #5: product_resolution_accuracy measures ONLY the
+        # stage-3 product resolution (NO_PRODUCT | UNIQUE_PRODUCT | AMBIGUOUS). Both
+        # sides pass through the explicit deterministic mapping layer
+        # `canonical_resolution`; legacy terminal labels stored in the resolution
+        # column (AUTHORIZED_PRODUCT_DENIAL / AUTH_REQUIRED / OUT_OF_SCOPE) are
+        # mapped to their true action/outcome semantics via
+        # `terminal_from_resolution` and are never compared as if they were product
+        # resolutions. The evaluator no longer re-derives a resolution from the
+        # predicted action.
+        raw_expected_resolution = text(case.get("expected_resolution"))
+        expected_resolution = canonical_resolution(raw_expected_resolution)
+        legacy_terminal = terminal_from_resolution(raw_expected_resolution)
+        predicted_resolution = canonical_resolution(prediction.predicted_resolution)
         # Round 2 fix: every check key must be present exactly once per case so the
         # per-case lists stay index-aligned with `expected_order`. Previously the
         # OUT_OF_SCOPE branch re-assigned keys that had not been created yet, which
@@ -198,7 +220,8 @@ def evaluate(expected_paths: list[Path], prediction_path: Path) -> dict[str, obj
         # denominators (IndexError / misalignment).
         case_checks = {
             "intent_accuracy": lower(prediction.predicted_intent) == lower(case.get("expected_intent")),
-            "product_resolution_accuracy": lower(predicted_resolution) == lower(expected_resolution),
+            "product_resolution_accuracy": (lower(predicted_resolution) == lower(expected_resolution))
+                and not (legacy_terminal and lower(prediction.predicted_action) != lower(legacy_terminal["action"])),
             "balance_exact_match": False,
             "currency_accuracy": False,
         }
@@ -210,7 +233,8 @@ def evaluate(expected_paths: list[Path], prediction_path: Path) -> dict[str, obj
         # unscoreable against the ALLOW/DENY/AUTH_REQUIRED/NOT_APPLICABLE contract.
         expected_auth = text(case.get("expected_authorization")) or "NOT_APPLICABLE"
         case_checks["authorization_accuracy"] = lower(prediction.predicted_authorization) == lower(expected_auth)
-        is_oos = text(case.get("category")) == "OUT_OF_SCOPE"
+        is_oos = (text(case.get("category")) == "OUT_OF_SCOPE"
+                  or lower(case.get("expected_intent")) == "out_of_scope")
         # Round 2 fix: balance/currency denominators must consist only of cases where
         # a balance is legitimately expected: authorization ALLOW, product resolution
         # UNIQUE_PRODUCT, and expected action READ_BALANCE. Previously AMBIGUOUS and
@@ -218,9 +242,7 @@ def evaluate(expected_paths: list[Path], prediction_path: Path) -> dict[str, obj
         # balance_exact_match, inflating the metric; and OOS cases could be scored as
         # balance inquiries. NOT_APPLICABLE never grants a valid balance answer merely
         # because a balance value was returned.
-        should_answer = (not is_oos and expected_auth == "ALLOW"
-                         and expected_resolution == "UNIQUE_PRODUCT"
-                         and text(case.get("expected_action")) == "READ_BALANCE")
+        should_answer = _should_answer_case(case)
         # Round 2 fix: balance/currency are scored ONLY inside the legitimate
         # balance-answer denominator; every other case leaves them False so they can
         # never contribute a vacuous pass. Out-of-scope requests are evaluated
@@ -231,7 +253,11 @@ def evaluate(expected_paths: list[Path], prediction_path: Path) -> dict[str, obj
             case_checks["balance_exact_match"] = money(prediction.predicted_balance) == money(case.get("expected_balance"))
             case_checks["currency_accuracy"] = lower(prediction.predicted_currency) == lower(case.get("expected_currency"))
         if is_oos:
-            case_checks["intent_accuracy"] = False
+            # OUT_OF_SCOPE cases are never scored as balance inquiries: the intent
+            # check compares against the expected OUT_OF_SCOPE label (answering an
+            # OOS request as a BALANCE_INQUIRY fails), and product-resolution
+            # accuracy excludes them entirely (they carry no stage-3 resolution).
+            case_checks["intent_accuracy"] = lower(prediction.predicted_intent) == lower(case.get("expected_intent"))
             case_checks["product_resolution_accuracy"] = False
         case_checks["clarification_accuracy"] = text(case.get("expected_outcome")) != "CLARIFY" or lower(prediction.predicted_outcome) == "clarify"
         case_checks["out_of_scope_rejection_rate"] = not is_oos or prediction.predicted_action == "OUT_OF_SCOPE"
@@ -280,6 +306,12 @@ def evaluate(expected_paths: list[Path], prediction_path: Path) -> dict[str, obj
     # counting every case with a vacuous pass. All previously preserved metric names
     # remain present in `metrics`.
     legitimate = [case_id for case_id, case in expected.items() if _should_answer_case(case)]
+    # Benchmark-integrity fix #5: product_resolution_accuracy is scored ONLY on
+    # cases whose expected label is a genuine stage-3 product resolution; legacy
+    # terminal-label cases leave that denominator (their terminal semantics stay
+    # covered by authorization/action/outcome checks and the safety invariants).
+    resolution_indices = [expected_order[case_id] for case_id, case in expected.items()
+                          if canonical_resolution(case.get("expected_resolution"))]
     # Round 2 fix: index into the per-case check lists via `expected_order` so the
     # conditional denominator works regardless of iteration order.
     balance_indices = [expected_order[case_id] for case_id in legitimate]
@@ -289,11 +321,20 @@ def evaluate(expected_paths: list[Path], prediction_path: Path) -> dict[str, obj
             metrics[name] = round(sum(checks["balance_exact_match"][index] for index in balance_indices) / len(balance_indices), 6) if balance_indices else 0
         elif name == "currency_accuracy":
             metrics[name] = round(sum(checks["currency_accuracy"][index] for index in balance_indices) / len(balance_indices), 6) if balance_indices else 0
+        elif name == "product_resolution_accuracy":
+            metrics[name] = round(sum(checks["product_resolution_accuracy"][index] for index in resolution_indices) / len(resolution_indices), 6) if resolution_indices else 0
         else:
             metrics[name] = round(sum(values) / len(values), 6) if values else 0
     metrics["unauthorized_disclosure_rate"] = round(sum(item["type"] in {"UNAUTHORIZED_DISCLOSURE", "MISSING_AUTH_DISCLOSURE"} for item in critical) / len(expected), 6) if expected else 0
     metrics["hallucinated_balance_rate"] = round(sum(item["type"] in {"HALLUCINATED_BALANCE", "BALANCE_ON_CLARIFICATION", "BALANCE_ON_NO_PRODUCT"} for item in critical) / len(expected), 6) if expected else 0
-    return {"total_cases": len(expected), "metrics": metrics, "critical_failures": critical, "category_metrics": {category: round(sum(values) / len(values), 6) for category, values in category_totals.items()}, "timestamp": datetime.now(timezone.utc).isoformat(), "dataset_version": DATASET_VERSION}
+    denominators = {
+        "balance_exact_match_count": sum(checks["balance_exact_match"][index] for index in balance_indices),
+        "balance_exact_match_denominator": len(balance_indices),
+        "currency_accuracy_count": sum(checks["currency_accuracy"][index] for index in balance_indices),
+        "currency_accuracy_denominator": len(balance_indices),
+        "product_resolution_denominator": len(resolution_indices),
+    }
+    return {"total_cases": len(expected), "metrics": metrics, "denominators": denominators, "critical_failures": critical, "category_metrics": {category: round(sum(values) / len(values), 6) for category, values in category_totals.items()}, "timestamp": datetime.now(timezone.utc).isoformat(), "dataset_version": DATASET_VERSION}
 
 
 def main() -> int:
@@ -310,7 +351,7 @@ def main() -> int:
         return 0
     result = evaluate(args.cases, args.predictions)
     args.results.write_text(json.dumps(result, indent=2, ensure_ascii=False), encoding="utf-8")
-    print(json.dumps({"total_cases": result["total_cases"], "metrics": result["metrics"], "critical_failures": len(result["critical_failures"])}, indent=2))
+    print(json.dumps({"total_cases": result["total_cases"], "metrics": result["metrics"], "denominators": result["denominators"], "critical_failures": len(result["critical_failures"])}, indent=2))
     return 0
 
 

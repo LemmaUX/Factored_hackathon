@@ -57,6 +57,49 @@ def money_text(value: Any) -> str:
     return "" if parsed is None else format(parsed, "f")
 
 
+# ---------------------------------------------------------------------------
+# Stage-level label separation (benchmark-integrity fix #5).
+#
+# PRODUCT RESOLUTION is an independent concept with exactly three members:
+#     NO_PRODUCT | UNIQUE_PRODUCT | AMBIGUOUS
+# AUTHORIZATION has exactly four members:
+#     ALLOW | DENY | AUTH_REQUIRED | NOT_APPLICABLE
+# ACTION / OUTCOME carry the terminal decision labels (READ_BALANCE,
+# REQUEST_CLARIFICATION, AUTH_REQUIRED, DENY, OUT_OF_SCOPE, ...).
+#
+# Some frozen fixtures encode the TERMINAL decision in the resolution column
+# instead of a stage-3 product resolution (curated challenge cases use
+# AUTHORIZED_PRODUCT_DENIAL / AUTH_REQUIRED / OUT_OF_SCOPE there). This module
+# provides ONE explicit, deterministic mapping layer so neither the candidate
+# nor the evaluator silently redefines the field: `canonical_resolution` maps
+# any legacy terminal label to its true stage-3 value and records the terminal
+# label's proper home (action/outcome) separately.
+# ---------------------------------------------------------------------------
+PRODUCT_RESOLUTIONS = ("NO_PRODUCT", "UNIQUE_PRODUCT", "AMBIGUOUS")
+TERMINAL_RESOLUTION_LABELS = {
+    "AUTHORIZED_PRODUCT_DENIAL": {"action": "DENY", "outcome": "DENY"},
+    "AUTH_REQUIRED": {"action": "AUTH_REQUIRED", "outcome": "AUTH_REQUIRED"},
+    "OUT_OF_SCOPE": {"action": "OUT_OF_SCOPE", "outcome": "OUT_OF_SCOPE"},
+}
+
+
+def canonical_resolution(label: Any) -> str:
+    """Map a possibly-terminal resolution label onto the pure stage-3 vocabulary.
+
+    NO_PRODUCT / UNIQUE_PRODUCT / AMBIGUOUS pass through unchanged; legacy
+    terminal labels (AUTH_REQUIRED, OUT_OF_SCOPE, AUTHORIZED_PRODUCT_DENIAL)
+    are NOT product resolutions and map to "" so they can never be compared as
+    if they were.
+    """
+    value = text(label).upper()
+    return value if value in PRODUCT_RESOLUTIONS else ""
+
+
+def terminal_from_resolution(label: Any) -> dict[str, str]:
+    """Return the action/outcome implied by a legacy terminal resolution label."""
+    return TERMINAL_RESOLUTION_LABELS.get(text(label).upper(), {})
+
+
 def prediction_from_row(row: dict[str, Any]) -> Prediction:
     return Prediction(
         case_id=text(row.get("case_id")),
