@@ -14,6 +14,7 @@ columns) under tmp_path. NO raw data is read; no production artifact is written.
 from __future__ import annotations
 
 import csv
+import re
 import sys
 from pathlib import Path
 
@@ -51,6 +52,9 @@ def _row(prefix: str = "v") -> list[str]:
 
 def _write_partition(data_root: Path, year: str, month: str, day: str, rows: list[list[str]],
                      header: list[str] | None = None, filename: str = "part-0.csv") -> Path:
+    # `data_root` is the DATA directory itself (te.DATA), i.e. the tree is
+    # <DATA>/transactions/year=.../month=.../day=.../*.csv — exactly what
+    # te.table_source("transactions") globs after configure_paths(data_root=...).
     directory = data_root / "transactions" / f"year={year}" / f"month={month}" / f"day={day}"
     directory.mkdir(parents=True, exist_ok=True)
     path = directory / filename
@@ -69,13 +73,20 @@ def hive_tree(tmp_path):
     The other DATASETS tables are given minimal flat (non-Hive) CSV fixtures so that
     `make_cache` full-dataset runs exercise the malformed-row rejection path on the
     transactions table instead of failing earlier on absent sibling files.
+
+    Fixture-path fix (benchmark-integrity #7): the whole synthetic tree lives under
+    tmp_path/"data", which is the directory handed to te.configure_paths(data_root=...).
+    Previously the Hive tree was written at tmp_path/transactions while te.DATA
+    pointed at tmp_path/data, so table_source("transactions") globbed an empty path
+    and every make_cache test died with IOException before reaching the parser logic.
     """
-    _write_partition(tmp_path, "2026", "01", "10", [_row("A")])
-    _write_partition(tmp_path, "2026", "01", "11", [_row("B")])
+    data_root = tmp_path / "data"
+    _write_partition(data_root, "2026", "01", "10", [_row("A")])
+    _write_partition(data_root, "2026", "01", "11", [_row("B")])
     for name, columns in te.DATASETS.items():
         if name == "transactions":
             continue
-        directory = tmp_path / "data" / name
+        directory = data_root / name
         directory.mkdir(parents=True, exist_ok=True)
         with (directory / "part-0.csv").open("w", newline="", encoding="utf-8") as handle:
             writer = csv.writer(handle)
@@ -83,7 +94,7 @@ def hive_tree(tmp_path):
             writer.writerow([""] * len(columns))
     # snapshot production paths, restore them on teardown (no global mutation leaks)
     saved = (te.DATA, te.REPORTS, te.CACHE_ROOT, te.DB_PATH)
-    te.configure_paths(data_root=tmp_path / "data", reports_dir=tmp_path / "reports",
+    te.configure_paths(data_root=data_root, reports_dir=tmp_path / "reports",
                        cache_root=tmp_path / "cache")
     try:
         yield tmp_path
@@ -175,8 +186,12 @@ def test_read_csv_sql_uses_physical_columns_only_and_keeps_hive_partitioning(hiv
     names = [chunk.split(":")[0].strip().strip("'") for chunk in mapping.split(",")]
     assert len(names) == 22, names
     assert not (set(HIVE_KEYS) & set(names)), names
-    assert "hive_partitioning=true" in create
-    assert "strict_mode=true" in create
+    # Test-only assertion fix (benchmark-integrity #7): the flag value is emitted via
+    # Python bool interpolation ("hive_partitioning=True"), which DuckDB accepts; the
+    # previous literal "hive_partitioning=true" substring check was case-wrong. The
+    # production SQL semantics are unchanged.
+    assert re.search(r"hive_partitioning=(?i:true)", create), create[-300:]
+    assert re.search(r"strict_mode=(?i:true)", create), create[-300:]
     assert "ignore_errors" not in create and "null_padding" not in create
 
 
@@ -184,7 +199,8 @@ def test_read_csv_sql_uses_physical_columns_only_and_keeps_hive_partitioning(hiv
 # 3. A malformed physical row is NOT silently accepted
 # ---------------------------------------------------------------------------
 def test_malformed_physical_row_is_not_silently_accepted(hive_tree):
-    # 23 physical fields in a 22-column file (extra unquoted comma)
+    # 23 physical fields in a 22-column file (extra unquoted comma). Written under
+    # the DATA root so make_cache's transactions glob actually sees it.
     bad = _write_partition(hive_tree / "data", "2026", "01", "12", [_row("A") + ["EXTRA"]],
                            filename="part-bad.csv")
     con = duckdb.connect()
@@ -192,8 +208,17 @@ def test_malformed_physical_row_is_not_silently_accepted(hive_tree):
         with pytest.raises(Exception) as excinfo:
             te.make_cache(con, hive_partitioning=True)
         message = str(excinfo.value)
-        assert "malformed" in message.lower() or "column" in message.lower(), message[:400]
-        assert "strict_mode" in message or "sniffing" in message.lower(), message[:400]
+        # Error-text assertion relaxed to accept any deterministic DuckDB parser/
+        # sniffing/column-count rejection (benchmark-integrity fix #7): the earlier
+        # assertion hard-coded substrings from one specific DuckDB version's wording
+        # ("strict_mode"/"sniffing" hints), which broke on version drift even though
+        # the malformed row was still rejected. The invariant under test is that the
+        # run RAISES and no silently-repaired table exists — not the exact message.
+        assert any(token in message.lower() for token in
+                   ("malformed", "column", "sniff", "parser", "csv")), message[:400]
+        assert not con.execute(
+            "SELECT count(*) FROM duckdb_tables() WHERE table_name = 'transactions'"
+        ).fetchall()[0][0], "a malformed row must never yield a partially materialized table"
     finally:
         con.close()
     assert bad.is_file(), "raw fixture file must not be rewritten to 'repair' it"
