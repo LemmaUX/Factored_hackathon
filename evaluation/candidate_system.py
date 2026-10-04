@@ -33,12 +33,13 @@ import csv
 import json
 import re
 import sys
+from dataclasses import asdict
 from pathlib import Path
 from typing import Any, Iterable
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from schema import Prediction, money_text, text  # noqa: E402
+from schema import Prediction, canonical_resolution, money_text, terminal_from_resolution, text  # noqa: E402
 
 # --------------------------------------------------------------------------
 # Stage 1/2 vocabularies (Spanish, matching the scoped LATAM workflow).
@@ -252,20 +253,12 @@ def decide_case(case: dict[str, str], catalog: dict[tuple[str, str], list[dict[s
     product = matches[0] if (action == "READ_BALANCE" and resolution == "UNIQUE_PRODUCT") else None
     ground_response(action, product, product_type)   # stage 6 (response is grounded-only; prediction fields below are the evaluator contract)
 
-    # The evaluator's expected_resolution column encodes the TERMINAL decision for
-    # non-inquiry states: AUTH_REQUIRED cases expect AUTH_REQUIRED, DENY cases
-    # expect AUTHORIZED_PRODUCT_DENIAL, OUT_OF_SCOPE cases expect OUT_OF_SCOPE.
-    # Product resolution (stage 3) and authorization (stage 4) remain independent
-    # concepts inside the pipeline; this mapping only formats the final decision
-    # label so it does not conflate them with NO_PRODUCT/UNIQUE/AMBIGUOUS.
-    if intent == "OUT_OF_SCOPE":
-        predicted_resolution = "OUT_OF_SCOPE"
-    elif authorization == "DENY":
-        predicted_resolution = "AUTHORIZED_PRODUCT_DENIAL"
-    elif authorization == "AUTH_REQUIRED":
-        predicted_resolution = "AUTH_REQUIRED"
-    else:
-        predicted_resolution = resolution
+    # Stage-level separation (benchmark-integrity fix #5): predicted_resolution
+    # carries ONLY a pure stage-3 product resolution
+    # (NO_PRODUCT | UNIQUE_PRODUCT | AMBIGUOUS). Terminal decision states
+    # (OUT_OF_SCOPE, AUTH_REQUIRED, DENY) live exclusively in
+    # predicted_action/predicted_outcome and NEVER leak into the resolution field.
+    predicted_resolution = resolution
     return Prediction(
         case_id=text(case.get("case_id")),
         predicted_intent=intent,
@@ -296,23 +289,61 @@ def load_csv(path: Path) -> list[dict[str, str]]:
 # --------------------------------------------------------------------------
 # Trusted product catalog (deterministic, offline).
 #
-# If the authoritative `data/products/` parquet/csv tree is present it is used
-# directly. In this offline snapshot that tree is absent, so the catalog is
-# RECONSTRUCTED from the frozen case fixtures: every UNIQUE_PRODUCT-labelled
-# case contributes one catalog row keyed by its own customer_id and expected
-# product identity, and every AMBIGUOUS-labelled case contributes
-# compatible_product_count distinct rows. Rows are always customer-scoped, so
-# duplicate product_numbers across customers never collide globally and stage 3
-# independently re-derives the resolution instead of trusting the label.
+# Benchmark-integrity fix (#2/#3/#4): the authoritative catalog comes ONLY from
+# an explicitly supplied product file (--products, e.g. data/products.csv with
+# the required columns customer_id, product_id, product_type, product_number,
+# current_balance, currency). The candidate NEVER reconstructs product records
+# from evaluation-case labels (expected_product_id / expected_product_number /
+# expected_balance / expected_currency / expected_resolution /
+# compatible_product_count are ground-truth and must stay isolated from
+# candidate inputs). If the product file is missing or lacks required columns
+# the CLI FAILS CLOSED with a non-zero exit code; there is no silent fallback.
+# Provenance is reported explicitly as catalog_source = EXPLICIT_PRODUCT_FILE.
 # --------------------------------------------------------------------------
-def products_from_data_tree(data_dir: Path) -> list[dict[str, str]] | None:
-    products = []
-    for path in sorted((data_dir / "products").rglob("*.csv")) if (data_dir / "products").is_dir() else []:
-        with path.open("r", encoding="utf-8-sig", newline="") as handle:
-            products.extend(dict(row) for row in csv.DictReader(handle))
-    if not products:
-        return None
-    return [{key: text(value) for key, value in product.items()} for product in products]
+REQUIRED_PRODUCT_COLUMNS = ("customer_id", "product_id", "product_type",
+                            "product_number", "current_balance", "currency")
+
+CATALOG_SOURCE_EXPLICIT = "EXPLICIT_PRODUCT_FILE"
+
+
+class CatalogError(RuntimeError):
+    """Raised when the authoritative product catalog cannot be loaded (fail closed)."""
+
+
+def load_product_file(path: Path) -> tuple[list[dict[str, str]], str]:
+    """Load the authoritative product catalog from an explicit CSV file.
+
+    Returns (rows, CATALOG_SOURCE_EXPLICIT). Fails closed when the file is
+    absent, unreadable, empty, or missing any REQUIRED_PRODUCT_COLUMNS. No
+    fallback to label-derived data exists on this path.
+    """
+    if not path.is_file():
+        raise CatalogError(f"Product catalog file not found: {path} (failing closed; no label-derived fallback).")
+    with path.open("r", encoding="utf-8-sig", newline="", errors="replace") as handle:
+        reader = csv.DictReader(handle)
+        fieldnames = [text(name) for name in (reader.fieldnames or [])]
+        missing = [column for column in REQUIRED_PRODUCT_COLUMNS if column not in fieldnames]
+        if missing:
+            raise CatalogError(f"Product catalog {path} is missing required columns: {missing}")
+        rows = [{key: text(value) for key, value in row.items()} for row in reader]
+    if not rows:
+        raise CatalogError(f"Product catalog {path} contains no data rows (failing closed).")
+    return rows, CATALOG_SOURCE_EXPLICIT
+
+
+# --------------------------------------------------------------------------
+# NON-AUTHORITATIVE test helper.
+#
+# `reconstruct_products()` derives synthetic catalog rows from evaluation-case
+# LABELS. It exists only so isolated unit tests can build tiny catalogs without
+# shipping fixture files. It is NOT reachable from the benchmark CLI
+# (`main`/`run_candidate` accept only an explicit --products file), and its
+# output can never legitimately support balance/currency/resolution accuracy
+# claims. Never use it for benchmark execution.
+# --------------------------------------------------------------------------
+NON_AUTHORITATIVE_NOTE = (
+    "NON-AUTHORITATIVE: builds catalog rows from evaluation labels; "
+    "unreachable from the benchmark CLI; unit tests only.")
 
 
 def reconstruct_products(cases_paths: list[Path]) -> list[dict[str, str]]:
@@ -361,29 +392,57 @@ def reconstruct_products(cases_paths: list[Path]) -> list[dict[str, str]]:
     return rows
 
 
-def build_catalog_from_cases(cases_paths: list[Path], data_dir: Path) -> dict[tuple[str, str], list[dict[str, str]]]:
-    products = products_from_data_tree(data_dir) or reconstruct_products(cases_paths)
-    return build_catalog(products)
+def run_candidate(cases_paths: list[Path], products_path: Path) -> tuple[list[Prediction], dict[str, object]]:
+    """Deterministic benchmark entry point.
+
+    Loads the evaluation cases, loads the EXPLICITLY SUPPLIED product catalog
+    (fails closed via CatalogError when unavailable), builds the customer-scoped
+    catalog from that source only, runs decide_case() over every case, and
+    returns predictions plus a provenance summary. There is no monkeypatching
+    and no dependency on evaluator labels anywhere on this path.
+    """
+    cases: list[dict[str, str]] = []
+    for path in cases_paths:
+        cases.extend(load_csv(path))
+    product_rows, catalog_source = load_product_file(products_path)
+    catalog = build_catalog(product_rows)
+    predictions = [decide_case(case, catalog) for case in cases]
+    summary = {
+        "catalog_source": catalog_source,
+        "catalog_product_rows": len(product_rows),
+        "catalog_customers": len({row["customer_id"] for row in product_rows}),
+        "cases": len(cases),
+        "predictions": len(predictions),
+    }
+    return predictions, summary
 
 
 def write_predictions(path: Path, predictions: list[Prediction]) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("w", encoding="utf-8", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=PREDICTION_FIELDS)
+    if not predictions:
+        raise ValueError("No predictions to write")
+
+    fieldnames = list(asdict(predictions[0]).keys())
+    with path.open("w", newline="", encoding="utf-8") as handle:
+        writer = csv.DictWriter(handle, fieldnames=fieldnames)
         writer.writeheader()
         for prediction in predictions:
-            writer.writerow({field: getattr(prediction, field) for field in PREDICTION_FIELDS})
+            writer.writerow(asdict(prediction))
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--cases", nargs="+", type=Path, required=True, help="Case CSV files (native/challenge fixtures).")
-    parser.add_argument("--products", type=Path, required=True, help="Fixture CSV used to rebuild the trusted catalog offline.")
+    parser.add_argument("--products", type=Path, required=True, help="Authoritative product catalog CSV (e.g. data/products.csv). Fails closed if unavailable.")
     parser.add_argument("--out", type=Path, required=True, help="Prediction CSV output (evaluator-consumable).")
     args = parser.parse_args(argv)
-    predictions = run_candidate(args.cases, args.products)
+    try:
+        predictions, summary = run_candidate(args.cases, args.products)
+    except CatalogError as error:
+        print(json.dumps({"status": "FAILED_CLOSED", "error": str(error)}, indent=2), file=sys.stderr)
+        return 2
     write_predictions(args.out, predictions)
-    print(json.dumps({"predictions": len(predictions), "out": str(args.out)}, indent=2))
+    summary.update({"out": str(args.out), "status": "OK"})
+    print(json.dumps(summary, indent=2))
     return 0
 
 
