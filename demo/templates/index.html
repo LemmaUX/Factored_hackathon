@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Deterministic Balance Inquiry</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <main class="shell">
+    <header class="hero">
+      <div class="eyebrow">OFFLINE BANKING PROTOTYPE <span>•</span> TRUSTED CATALOG</div>
+      <div class="thesis"><span>CORE THESIS</span> Interpretation <b>!=</b> financial authority</div>
+      <h1>Every balance answer must earn its way through policy.</h1>
+      <p class="hero-copy">A deterministic, customer-scoped balance inquiry. Every decision is visible, auditable, and fail-closed.</p>
+    </header>
+
+    <section class="panel query-panel">
+      <div class="section-label">01 / Ask the engine</div>
+      <form id="evaluate-form">
+        <label for="query">Customer query <span class="label-hint">Spanish language input</span></label>
+        <textarea id="query" rows="3" placeholder="Escribe una consulta bancaria..." required>¿Cuál es el saldo de mi cuenta de ahorros?</textarea>
+        <div class="controls">
+          <div>
+            <label for="session-mode">Session state <span class="label-hint">Presentation fixture</span></label>
+            <select id="session-mode">
+              <option value="authenticated">Authenticated as CLI-5A1RQN103PRE</option>
+              <option value="unauthenticated">Not authenticated</option>
+              <option value="wrong-owner">Authenticated as a different customer</option>
+            </select>
+          </div>
+          <button type="submit">Evaluate <span>→</span></button>
+        </div>
+      </form>
+      <div class="examples">
+        <span>Quick examples</span>
+        <button type="button" data-query="¿Cuál es el saldo de mi cuenta de ahorros?">Savings balance</button>
+        <button type="button" data-query="¿Cuál es el saldo de mi tarjeta de crédito?">Credit card balance</button>
+        <button type="button" data-query="Quiero transferir dinero">Transfer money</button>
+      </div>
+    </section>
+
+    <section class="panel pipeline-panel">
+      <div class="section-label">02 / Deterministic pipeline</div>
+      <div id="pipeline" class="pipeline empty"><p>Run an evaluation to inspect each stage.</p></div>
+    </section>
+
+    <section class="result-grid">
+      <section class="panel result-panel">
+        <div class="section-label">03 / Grounded outcome</div>
+        <div id="result" class="result-empty">Your result will appear here.</div>
+      </section>
+      <aside class="panel guardrails">
+        <div class="section-label">Guardrails</div>
+        <div class="guardrail"><strong>✓</strong><span><b>Trusted catalog</b><small>Balances are copied only from the explicit product file.</small></span></div>
+        <div class="guardrail"><strong>✓</strong><span><b>Customer scope</b><small>Resolution is limited to the selected customer.</small></span></div>
+        <div class="guardrail"><strong>✓</strong><span><b>Policy boundary</b><small>Unauthorized cases never reach a financial answer.</small></span></div>
+      </aside>
+    </section>
+    <footer>LOCAL ONLY · NO LLM · NO EXTERNAL APIs · DETERMINISTIC POLICY</footer>
+  </main>
+  <script>
+    const form = document.querySelector("#evaluate-form");
+    const query = document.querySelector("#query");
+    const mode = document.querySelector("#session-mode");
+    const pipeline = document.querySelector("#pipeline");
+    const result = document.querySelector("#result");
+    const stages = [["intent", "Intent"], ["product", "Product type"], ["resolution", "Resolution"], ["authorization", "Authorization"], ["action", "Action"], ["outcome", "Outcome"]];
+    document.querySelectorAll("[data-query]").forEach(button => {
+      button.addEventListener("click", () => { query.value = button.dataset.query; form.requestSubmit(); });
+    });
+    form.addEventListener("submit", async event => {
+      event.preventDefault();
+      result.innerHTML = '<div class="loading">Evaluating deterministic policy…</div>';
+      try {
+        const response = await fetch("/api/evaluate", { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({query: query.value, session_mode: mode.value}) });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || "Evaluation failed");
+        pipeline.className = "pipeline";
+        pipeline.innerHTML = stages.map(([key, label], index) => `<div class="stage"><span class="stage-number">0${index + 1}</span><span class="stage-label">${label}</span><strong>${data.pipeline[key]}</strong></div>`).join('<span class="connector">→</span>');
+        const outcome = data.pipeline.outcome;
+        const isOutOfScope = outcome === "OUT_OF_SCOPE";
+        const statusClass = data.result.disclosure_allowed ? "allowed" : "blocked-state";
+        const disclosure = data.result.disclosure_allowed
+          ? `<div class="facts"><div><span>Product type</span><b>${data.result.product_type}</b></div><div><span>Product number</span><b>${data.result.product_number}</b></div><div><span>Exact balance</span><b>${data.result.balance} ${data.result.currency}</b></div></div>`
+          : `<div class="blocked ${isOutOfScope ? "scope-state" : ""}"><strong>${isOutOfScope ? "No financial lookup occurred" : "No financial balance disclosed"}</strong><span>${isOutOfScope ? "This request stopped at intent policy and never entered balance resolution." : `Policy state: ${data.pipeline.authorization} · Action: ${data.pipeline.action}`}</span></div>`;
+        result.innerHTML = `<div class="result-status ${statusClass}"><span class="status-dot"></span><strong>${data.result.disclosure_allowed ? "ANSWER · GROUNDED DISCLOSURE" : outcome}</strong><span>${data.result.disclosure_allowed ? "Authorized response" : "Policy-controlled response"}</span></div><div class="outcome-message">${data.result.message}</div>${disclosure}<div class="provenance"><span>●</span> Grounded in ${data.catalog_source} · ${data.scope_note}</div>`;
+      } catch (error) {
+        result.innerHTML = `<div class="error">${error.message}</div>`;
+      }
+    });
+  </script>
+</body>
+</html>
