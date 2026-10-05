@@ -120,10 +120,11 @@ class CandidateCatalogTests(unittest.TestCase):
         self.assertEqual(prediction.predicted_product_id, "")
         self.assertEqual(prediction.predicted_balance, "")
         self.assertEqual(prediction.predicted_currency, "")
-        # the reconstruction helper is unreachable from the benchmark CLI surface
+        # label-derived catalog construction does not exist in the module at all
+        # (permanently removed; no fallback of any kind remains)
         source = (REPO / "evaluation" / "candidate_system.py").read_text(encoding="utf-8")
-        cli_body = source[source.index("def run_candidate"):source.index("if __name__")]
-        self.assertNotIn("reconstruct_products(", cli_body)
+        for forbidden in ("def reconstruct_products", "products_from_data_tree", "build_catalog_from_cases"):
+            self.assertNotIn(forbidden, source, f"{forbidden} must not exist in candidate_system.py")
 
     # ---- D/E/F. resolutions derive from the actual catalog ----------------
     def test_D_unique_product_from_catalog(self):
@@ -239,7 +240,8 @@ class DenominatorAndLabelTests(unittest.TestCase):
         self.assertEqual(result["denominators"]["balance_exact_match_denominator"], 0)
 
     def test_complete_ground_truth_enters_both_denominators(self):
-        case = make_case("T-OK", "saldo de mi cuenta de ahorros", expected_balance="10.00",
+        case = make_case("T-OK", "saldo de mi cuenta de ahorros", expected_product_id="PRD-1",
+                         expected_balance="10.00",
                          expected_currency="COP", expected_resolution="UNIQUE_PRODUCT",
                          expected_action="READ_BALANCE", expected_outcome="ANSWER")
         result = self.run_case(case, self.base_answer_prediction())
