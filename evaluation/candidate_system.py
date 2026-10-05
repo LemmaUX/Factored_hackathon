@@ -332,64 +332,30 @@ def load_product_file(path: Path) -> tuple[list[dict[str, str]], str]:
 
 
 # --------------------------------------------------------------------------
-# NON-AUTHORITATIVE test helper.
+# BENCHMARK-INTEGRITY: label-derived catalog construction is PERMANENTLY
+# REMOVED from this module. No reconstruction helper of any kind remains
+# (neither a label-reading builder nor a directory-globbing variant), so it is
+# structurally impossible for the benchmark to seed the catalog from
+# expected_product_id / expected_product_number / expected_balance /
+# expected_currency / expected_resolution / compatible_product_count.
 #
-# `reconstruct_products()` derives synthetic catalog rows from evaluation-case
-# LABELS. It exists only so isolated unit tests can build tiny catalogs without
-# shipping fixture files. It is NOT reachable from the benchmark CLI
-# (`main`/`run_candidate` accept only an explicit --products file), and its
-# output can never legitimately support balance/currency/resolution accuracy
-# claims. Never use it for benchmark execution.
+# There is exactly ONE authoritative catalog source:
+#     --products  ->  load_product_file()  ->  data/products.csv
+# with provenance `catalog_source = EXPLICIT_PRODUCT_FILE`. If that file is
+# missing or invalid the CLI FAILS CLOSED (non-zero exit); no fallback of any
+# kind exists. Unit tests build catalogs by writing explicit temporary product
+# CSV fixtures consumed through the same `load_product_file()` path.
 # --------------------------------------------------------------------------
-NON_AUTHORITATIVE_NOTE = (
-    "NON-AUTHORITATIVE: builds catalog rows from evaluation labels; "
-    "unreachable from the benchmark CLI; unit tests only.")
 
 
-def reconstruct_products(cases_paths: list[Path]) -> list[dict[str, str]]:
-    rows: list[dict[str, str]] = []
-    seen_unique: set[tuple[str, str, str]] = set()
-    seen_ambiguous: set[tuple[str, str]] = set()
-    for path in cases_paths:
-        for record in load_csv(path):
-            customer_id = text(record.get("customer_id"))
-            product_type = text(record.get("expected_product_type"))
-            resolution = text(record.get("expected_resolution"))
-            if not customer_id or product_type not in PRODUCT_TYPES:
-                continue
-            if resolution == "UNIQUE_PRODUCT" and text(record.get("expected_product_id")):
-                key = (customer_id, product_type, text(record.get("expected_product_id")))
-                if key in seen_unique:
-                    continue
-                seen_unique.add(key)
-                rows.append({
-                    "customer_id": customer_id,
-                    "product_id": text(record.get("expected_product_id")),
-                    "product_type": product_type,
-                    "product_number": text(record.get("expected_product_number")),
-                    "current_balance": text(record.get("expected_balance")),
-                    "currency": text(record.get("expected_currency")),
-                })
-            elif resolution == "AMBIGUOUS":
-                akey = (customer_id, product_type)
-                if akey in seen_ambiguous:
-                    continue
-                seen_ambiguous.add(akey)
-                try:
-                    count = max(2, int(text(record.get("compatible_product_count")) or "0"))
-                except ValueError:
-                    count = 2
-                base = text(record.get("case_id")) or f"{customer_id}-{len(rows)}"
-                for index in range(count):
-                    rows.append({
-                        "customer_id": customer_id,
-                        "product_id": f"PRD-AMB-{base}-{index + 1}",
-                        "product_type": product_type,
-                        "product_number": f"NUM-AMB-{base}-{index + 1}",
-                        "current_balance": "",
-                        "currency": "",
-                    })
-    return rows
+def write_predictions(path: Path, predictions: list[Prediction]) -> None:
+    """Write evaluator-consumable predictions using the existing schema fields."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=PREDICTION_FIELDS)
+        writer.writeheader()
+        for prediction in predictions:
+            writer.writerow({field: getattr(prediction, field) for field in PREDICTION_FIELDS})
 
 
 def run_candidate(cases_paths: list[Path], products_path: Path) -> tuple[list[Prediction], dict[str, object]]:

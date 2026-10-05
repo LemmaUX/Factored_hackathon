@@ -120,7 +120,8 @@ class CandidateCatalogTests(unittest.TestCase):
         self.assertEqual(prediction.predicted_product_id, "")
         self.assertEqual(prediction.predicted_balance, "")
         self.assertEqual(prediction.predicted_currency, "")
-        # the reconstruction helper is unreachable from the benchmark CLI surface
+        # label-derived catalog construction does not exist in the module at all
+        # (permanently removed; no fallback of any kind remains)
         source = (REPO / "evaluation" / "candidate_system.py").read_text(encoding="utf-8")
         cli_body = source[source.index("def run_candidate"):source.index("if __name__")]
         self.assertNotIn("reconstruct_products(", cli_body)
